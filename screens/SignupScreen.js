@@ -1,22 +1,112 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     View,
     Text,
     TextInput,
     TouchableOpacity,
-    ScrollView,
+    StyleSheet,
     Animated,
-    Easing,
+    Dimensions,
     Alert,
+    ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
-    Dimensions,
-    StyleSheet,
+    ScrollView
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 
 const { width, height } = Dimensions.get('window');
+
+// Gerar posições fixas para as bolinhas
+const generateFixedPositions = () => {
+    const positions = [];
+    const shapeConfigs = [
+        { size: 60, color: 'purple', count: 8 },
+        { size: 40, color: 'white', count: 6 },
+        { size: 80, color: 'purple', count: 4 },
+        { size: 25, color: 'white', count: 10 },
+        { size: 15, color: 'purple', count: 15 },
+    ];
+
+    let shapeId = 0;
+    shapeConfigs.forEach((config) => {
+        for (let i = 0; i < config.count; i++) {
+            positions.push({
+                id: shapeId++,
+                size: config.size,
+                color: config.color,
+                initialX: Math.random() * (width - config.size),
+                initialY: Math.random() * (height - config.size),
+                animationDelay: Math.random() * 3000
+            });
+        }
+    });
+
+    return positions;
+};
+
+// Posições fixas (fora do componente para não regenerar)
+const fixedShapes = generateFixedPositions();
+
+const FloatingShape = ({ size, color, initialX, initialY, animationDelay }) => {
+    const animatedValue = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+        const animation = Animated.loop(
+            Animated.sequence([
+                Animated.timing(animatedValue, {
+                    toValue: 1,
+                    duration: 8000 + Math.random() * 2000,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(animatedValue, {
+                    toValue: 0,
+                    duration: 8000 + Math.random() * 2000,
+                    useNativeDriver: true,
+                }),
+            ]),
+            { iterations: -1 }
+        );
+
+        setTimeout(() => {
+            animation.start();
+        }, animationDelay);
+
+        return () => animation.stop();
+    }, []);
+
+    const translateY = animatedValue.interpolate({
+        inputRange: [0, 0.25, 0.5, 0.75, 1],
+        outputRange: [0, -10, 5, -5, 0],
+    });
+
+    const translateX = animatedValue.interpolate({
+        inputRange: [0, 0.25, 0.5, 0.75, 1],
+        outputRange: [0, 5, -5, 10, 0],
+    });
+
+    return (
+        <Animated.View
+            style={[
+                styles.floatingShape,
+                {
+                    width: size,
+                    height: size,
+                    left: initialX,
+                    top: initialY,
+                    backgroundColor: color === 'purple'
+                        ? 'rgba(107, 47, 160, 0.8)'
+                        : 'rgba(255, 255, 255, 0.4)',
+                    transform: [
+                        { translateX },
+                        { translateY },
+                    ],
+                },
+            ]}
+        />
+    );
+};
 
 export default function SignupScreen({ navigation }) {
     const [name, setName] = useState('');
@@ -26,351 +116,249 @@ export default function SignupScreen({ navigation }) {
     const [acceptTerms, setAcceptTerms] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    const fadeAnim = useRef(new Animated.Value(0)).current;
-    const slideAnim = useRef(new Animated.Value(50)).current;
-    const floatingBalls = useRef([]);
+    const [nameError, setNameError] = useState('');
+    const [emailError, setEmailError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+    const [confirmPasswordError, setConfirmPasswordError] = useState('');
+
+    const cardScale = useRef(new Animated.Value(0.9)).current;
+    const cardOpacity = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
-        // Animação de entrada
         Animated.parallel([
-            Animated.timing(fadeAnim, {
+            Animated.spring(cardScale, {
                 toValue: 1,
-                duration: 1000,
+                tension: 50,
+                friction: 7,
                 useNativeDriver: true,
             }),
-            Animated.timing(slideAnim, {
-                toValue: 0,
+            Animated.timing(cardOpacity, {
+                toValue: 1,
                 duration: 800,
-                easing: Easing.out(Easing.cubic),
                 useNativeDriver: true,
             }),
         ]).start();
-
-        initializeFloatingBalls();
     }, []);
 
-    const initializeFloatingBalls = () => {
-        const balls = [];
-        const colors = ['#6b2fa0', '#ffffff', '#6b2fa0', '#ffffff', '#6b2fa0'];
-        const sizes = [40, 30, 50, 20, 15];
-
-        // Definir áreas seguras onde as bolinhas NÃO podem aparecer (onde fica o card)
-        const cardArea = {
-            left: 20,
-            right: width - 20,
-            top: height * 0.15,
-            bottom: height * 0.85
-        };
-
-        for (let i = 0; i < 25; i++) {
-            const anim = new Animated.Value(0);
-
-            // Gerar posições que evitem a área do card
-            let startX, startY;
-            let attempts = 0;
-
-            do {
-                startX = Math.random() * width;
-                startY = Math.random() * height;
-                attempts++;
-
-                // Se depois de 10 tentativas não encontrar posição, aceita qualquer uma
-                if (attempts > 10) break;
-
-            } while (
-                startX > cardArea.left &&
-                startX < cardArea.right &&
-                startY > cardArea.top &&
-                startY < cardArea.bottom
-            );
-
-            balls.push({
-                anim,
-                color: colors[i % colors.length],
-                size: sizes[i % sizes.length],
-                startX,
-                startY,
-            });
-
-            // Animação de flutuação
-            const floatAnimation = Animated.sequence([
-                Animated.timing(anim, {
-                    toValue: 1,
-                    duration: 5000 + Math.random() * 4000,
-                    easing: Easing.inOut(Easing.sin),
-                    useNativeDriver: true,
-                }),
-                Animated.timing(anim, {
-                    toValue: 0,
-                    duration: 5000 + Math.random() * 4000,
-                    easing: Easing.inOut(Easing.sin),
-                    useNativeDriver: true,
-                }),
-            ]);
-
-            Animated.loop(floatAnimation).start();
-        }
-        floatingBalls.current = balls;
-    };
-
-    const renderFloatingBalls = () => {
-        return floatingBalls.current.map((ball, index) => {
-            const translateY = ball.anim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, -15 + Math.random() * 30],
-            });
-
-            const translateX = ball.anim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, -10 + Math.random() * 20],
-            });
-
-            const scale = ball.anim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0.9, 1.1],
-            });
-
-            const opacity = ball.anim.interpolate({
-                inputRange: [0, 0.5, 1],
-                outputRange: [
-                    ball.color === '#ffffff' ? 0.3 : 0.4,
-                    ball.color === '#ffffff' ? 0.5 : 0.6,
-                    ball.color === '#ffffff' ? 0.3 : 0.4,
-                ],
-            });
-
-            return (
-                <Animated.View
-                    key={index}
-                    style={{
-                        position: 'absolute',
-                        width: ball.size,
-                        height: ball.size,
-                        borderRadius: ball.size / 2,
-                        backgroundColor: ball.color,
-                        left: ball.startX,
-                        top: ball.startY,
-                        opacity: opacity,
-                        transform: [{ translateY }, { translateX }, { scale }],
-                        zIndex: 1,
-                    }}
-                />
-            );
-        });
-    };
-
     const validateForm = () => {
+        let isValid = true;
+
+        setNameError('');
+        setEmailError('');
+        setPasswordError('');
+        setConfirmPasswordError('');
+
         if (!name) {
-            Alert.alert('Erro', 'Nome é obrigatório');
-            return false;
+            setNameError('Nome é obrigatório');
+            isValid = false;
+        } else if (name.length < 3) {
+            setNameError('Nome deve ter pelo menos 3 caracteres');
+            isValid = false;
         }
-        if (name.length < 3) {
-            Alert.alert('Erro', 'Nome deve ter pelo menos 3 caracteres');
-            return false;
-        }
+
         if (!email) {
-            Alert.alert('Erro', 'Email é obrigatório');
-            return false;
+            setEmailError('Email é obrigatório');
+            isValid = false;
+        } else if (!/\S+@\S+\.\S+/.test(email)) {
+            setEmailError('Email inválido');
+            isValid = false;
         }
-        if (!/\S+@\S+\.\S+/.test(email)) {
-            Alert.alert('Erro', 'Email inválido');
-            return false;
-        }
+
         if (!password) {
-            Alert.alert('Erro', 'Senha é obrigatória');
-            return false;
+            setPasswordError('Senha é obrigatória');
+            isValid = false;
+        } else if (password.length < 6) {
+            setPasswordError('Senha deve ter pelo menos 6 caracteres');
+            isValid = false;
         }
-        if (password.length < 6) {
-            Alert.alert('Erro', 'Senha deve ter pelo menos 6 caracteres');
-            return false;
-        }
+
         if (!confirmPassword) {
-            Alert.alert('Erro', 'Confirmação de senha é obrigatória');
-            return false;
+            setConfirmPasswordError('Confirmação de senha é obrigatória');
+            isValid = false;
+        } else if (password !== confirmPassword) {
+            setConfirmPasswordError('As senhas não coincidem');
+            isValid = false;
         }
-        if (password !== confirmPassword) {
-            Alert.alert('Erro', 'As senhas não coincidem');
-            return false;
-        }
+
         if (!acceptTerms) {
-            Alert.alert('Erro', 'Você deve aceitar os termos e condições');
-            return false;
+            Alert.alert('Atenção', 'Você deve aceitar os termos e condições para se cadastrar');
+            isValid = false;
         }
-        return true;
+
+        return isValid;
     };
 
     const handleSignup = () => {
-        if (!validateForm()) return;
+        if (validateForm()) {
+            setLoading(true);
 
-        setLoading(true);
-
-        // Simular processo de cadastro
-        setTimeout(() => {
-            setLoading(false);
-            Alert.alert('Sucesso', 'Cadastro realizado com sucesso!');
-            navigation.navigate('Login');
-        }, 1500);
+            // Simular processo de cadastro
+            setTimeout(() => {
+                navigation.navigate('Loading', {
+                    nextScreen: 'Login',
+                    message: 'Cadastro Realizado',
+                    progressText: 'Redirecionando para login...'
+                });
+            }, 1000);
+        }
     };
 
     return (
         <View style={styles.container}>
-            {/* Background com gradiente amarelo */}
             <LinearGradient
                 colors={['#ffd700', '#f6ad55', '#ffcc00']}
-                style={styles.background}
+                style={styles.gradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
             >
-                {/* Blobs grandes */}
-                <View style={styles.blob1} />
-                <View style={styles.blob2} />
+                {/* Floating Shapes Fixas */}
+                {fixedShapes.map((shape) => (
+                    <FloatingShape
+                        key={shape.id}
+                        size={shape.size}
+                        color={shape.color}
+                        initialX={shape.initialX}
+                        initialY={shape.initialY}
+                        animationDelay={shape.animationDelay}
+                    />
+                ))}
 
-                {/* Bolinhas flutuantes */}
-                {renderFloatingBalls()}
-            </LinearGradient>
-
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={styles.keyboardAvoid}
-            >
-                <ScrollView
-                    contentContainerStyle={styles.scrollContent}
-                    showsVerticalScrollIndicator={false}
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={styles.keyboardAvoid}
                 >
-                    <Animated.View
-                        style={[
-                            styles.animatedContainer,
-                            {
-                                opacity: fadeAnim,
-                                transform: [{ translateY: slideAnim }],
-                            }
-                        ]}
+                    <ScrollView
+                        contentContainerStyle={styles.scrollContent}
+                        showsVerticalScrollIndicator={false}
                     >
-                        <View style={styles.card}>
-                            <Text style={styles.logo}>artflow</Text>
-                            <Text style={styles.subtitle}>Crie sua conta na plataforma de arte digital</Text>
+                        <Animated.View
+                            style={[
+                                styles.signupCard,
+                                {
+                                    transform: [{ scale: cardScale }],
+                                    opacity: cardOpacity,
+                                },
+                            ]}
+                        >
+                            <BlurView intensity={20} style={styles.blurView}>
+                                <Text style={styles.logo}>artflow</Text>
+                                <Text style={styles.subtitle}>Crie sua conta na plataforma de arte digital</Text>
 
-                            {/* Input Nome */}
-                            <View style={styles.inputContainer}>
-                                <Ionicons
-                                    name="person-outline"
-                                    size={20}
-                                    color="rgba(107, 47, 160, 0.7)"
-                                    style={styles.inputIcon}
-                                />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Nome completo"
-                                    placeholderTextColor="rgba(107, 47, 160, 0.7)"
-                                    value={name}
-                                    onChangeText={setName}
-                                />
-                            </View>
+                                <View style={styles.form}>
+                                    <View style={styles.inputGroup}>
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Nome completo"
+                                            placeholderTextColor="rgba(107, 47, 160, 0.7)"
+                                            value={name}
+                                            onChangeText={(text) => {
+                                                setName(text);
+                                                if (text) setNameError('');
+                                            }}
+                                        />
+                                        {nameError ? (
+                                            <Text style={styles.errorText}>{nameError}</Text>
+                                        ) : null}
+                                    </View>
 
-                            {/* Input Email */}
-                            <View style={styles.inputContainer}>
-                                <Ionicons
-                                    name="mail-outline"
-                                    size={20}
-                                    color="rgba(107, 47, 160, 0.7)"
-                                    style={styles.inputIcon}
-                                />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="E-mail educacional"
-                                    placeholderTextColor="rgba(107, 47, 160, 0.7)"
-                                    value={email}
-                                    onChangeText={setEmail}
-                                    keyboardType="email-address"
-                                    autoCapitalize="none"
-                                />
-                            </View>
+                                    <View style={styles.inputGroup}>
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="E-mail educacional"
+                                            placeholderTextColor="rgba(107, 47, 160, 0.7)"
+                                            value={email}
+                                            onChangeText={(text) => {
+                                                setEmail(text);
+                                                if (text) setEmailError('');
+                                            }}
+                                            keyboardType="email-address"
+                                            autoCapitalize="none"
+                                        />
+                                        {emailError ? (
+                                            <Text style={styles.errorText}>{emailError}</Text>
+                                        ) : null}
+                                    </View>
 
-                            {/* Input Senha */}
-                            <View style={styles.inputContainer}>
-                                <Ionicons
-                                    name="lock-closed-outline"
-                                    size={20}
-                                    color="rgba(107, 47, 160, 0.7)"
-                                    style={styles.inputIcon}
-                                />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Senha"
-                                    placeholderTextColor="rgba(107, 47, 160, 0.7)"
-                                    value={password}
-                                    onChangeText={setPassword}
-                                    secureTextEntry
-                                />
-                            </View>
+                                    <View style={styles.inputGroup}>
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Senha"
+                                            placeholderTextColor="rgba(107, 47, 160, 0.7)"
+                                            value={password}
+                                            onChangeText={(text) => {
+                                                setPassword(text);
+                                                if (text) setPasswordError('');
+                                            }}
+                                            secureTextEntry
+                                        />
+                                        {passwordError ? (
+                                            <Text style={styles.errorText}>{passwordError}</Text>
+                                        ) : null}
+                                    </View>
 
-                            {/* Input Confirmar Senha */}
-                            <View style={styles.inputContainer}>
-                                <Ionicons
-                                    name="lock-closed-outline"
-                                    size={20}
-                                    color="rgba(107, 47, 160, 0.7)"
-                                    style={styles.inputIcon}
-                                />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Confirmar senha"
-                                    placeholderTextColor="rgba(107, 47, 160, 0.7)"
-                                    value={confirmPassword}
-                                    onChangeText={setConfirmPassword}
-                                    secureTextEntry
-                                />
-                            </View>
+                                    <View style={styles.inputGroup}>
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Confirmar senha"
+                                            placeholderTextColor="rgba(107, 47, 160, 0.7)"
+                                            value={confirmPassword}
+                                            onChangeText={(text) => {
+                                                setConfirmPassword(text);
+                                                if (text) setConfirmPasswordError('');
+                                            }}
+                                            secureTextEntry
+                                        />
+                                        {confirmPasswordError ? (
+                                            <Text style={styles.errorText}>{confirmPasswordError}</Text>
+                                        ) : null}
+                                    </View>
 
-                            <TouchableOpacity
-                                style={styles.terms}
-                                onPress={() => setAcceptTerms(!acceptTerms)}
-                                activeOpacity={0.7}
-                            >
-                                <View style={[
-                                    styles.checkbox,
-                                    acceptTerms && styles.checkboxChecked
-                                ]}>
-                                    {acceptTerms && <Ionicons name="checkmark" size={14} color="#fff" />}
-                                </View>
-                                <Text style={styles.termsText}>Aceito os termos e condições</Text>
-                            </TouchableOpacity>
+                                    <View style={styles.termsContainer}>
+                                        <TouchableOpacity
+                                            style={styles.termsCheckContainer}
+                                            onPress={() => setAcceptTerms(!acceptTerms)}
+                                        >
+                                            <View style={[
+                                                styles.checkbox,
+                                                acceptTerms && styles.checkboxChecked
+                                            ]}>
+                                                {acceptTerms && <Text style={styles.checkmark}>✓</Text>}
+                                            </View>
+                                            <Text style={styles.termsText}>Aceito os termos e condições</Text>
+                                        </TouchableOpacity>
+                                    </View>
 
-                            <TouchableOpacity
-                                style={[styles.signupButton, loading && styles.buttonDisabled]}
-                                onPress={handleSignup}
-                                disabled={loading}
-                                activeOpacity={0.8}
-                            >
-                                <LinearGradient
-                                    colors={['#6b2fa0', '#4a1f7a']}
-                                    style={styles.gradientButton}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 0 }}
-                                >
-                                    {loading ? (
-                                        <View style={styles.spinnerContainer}>
-                                            <Animated.View style={styles.spinner} />
-                                        </View>
-                                    ) : (
-                                        <Text style={styles.buttonText}>Cadastrar</Text>
-                                    )}
-                                </LinearGradient>
-                            </TouchableOpacity>
-
-                            <View style={styles.loginLink}>
-                                <Text style={styles.loginText}>
-                                    Já tem uma conta?{' '}
-                                    <Text
-                                        style={styles.loginLinkText}
-                                        onPress={() => navigation.navigate('Login')}
+                                    <TouchableOpacity
+                                        style={[styles.signupButton, loading && styles.signupButtonDisabled]}
+                                        onPress={handleSignup}
+                                        disabled={loading}
                                     >
-                                        Faça login
-                                    </Text>
-                                </Text>
-                            </View>
-                        </View>
-                    </Animated.View>
-                </ScrollView>
-            </KeyboardAvoidingView>
+                                        <LinearGradient
+                                            colors={['#6b2fa0', '#4a1f7a']}
+                                            style={styles.buttonGradient}
+                                            start={{ x: 0, y: 0 }}
+                                            end={{ x: 1, y: 0 }}
+                                        >
+                                            {loading ? (
+                                                <ActivityIndicator color="#fff" size="small" />
+                                            ) : (
+                                                <Text style={styles.buttonText}>Cadastrar</Text>
+                                            )}
+                                        </LinearGradient>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                                        <Text style={styles.loginLink}>
+                                            Já tem uma conta?{' '}
+                                            <Text style={styles.loginLinkBold}>Faça login</Text>
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </BlurView>
+                        </Animated.View>
+                    </ScrollView>
+                </KeyboardAvoidingView>
+            </LinearGradient>
         </View>
     );
 }
@@ -379,188 +367,140 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
-    background: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 0,
-    },
-    blob1: {
-        position: 'absolute',
-        width: 300,
-        height: 250,
-        backgroundColor: '#6b2fa0',
-        opacity: 0.15,
-        bottom: -50,
-        left: -100,
-        borderRadius: 140,
-        transform: [{ rotate: '0deg' }],
-        zIndex: 1,
-    },
-    blob2: {
-        position: 'absolute',
-        width: 200,
-        height: 180,
-        backgroundColor: '#6b2fa0',
-        opacity: 0.15,
-        top: -30,
-        right: -50,
-        borderRadius: 100,
-        transform: [{ rotate: '0deg' }],
-        zIndex: 1,
+    gradient: {
+        flex: 1,
     },
     keyboardAvoid: {
         flex: 1,
-        zIndex: 10,
     },
     scrollContent: {
         flexGrow: 1,
         justifyContent: 'center',
-        minHeight: height,
+        paddingHorizontal: 20,
+        paddingVertical: 40,
     },
-    animatedContainer: {
-        marginHorizontal: 20,
-        zIndex: 20,
+    floatingShape: {
+        position: 'absolute',
+        borderRadius: 999,
     },
-    card: {
-        backgroundColor: 'rgba(107, 47, 160, 0.15)',
+    signupCard: {
         borderRadius: 20,
-        padding: 30,
+        overflow: 'hidden',
+        marginHorizontal: 10,
+    },
+    blurView: {
+        padding: 35,
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',
         borderWidth: 1,
-        borderColor: 'rgba(107, 47, 160, 0.3)',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.4,
-        shadowRadius: 25,
-        elevation: 15,
-        zIndex: 30,
+        borderColor: 'rgba(107, 47, 160, 0.8)',
     },
     logo: {
-        fontSize: 36,
+        fontSize: 40,
         fontWeight: '300',
         color: '#6b2fa0',
         textAlign: 'center',
         marginBottom: 10,
         fontStyle: 'italic',
-        textShadowColor: 'rgba(0, 0, 0, 0.3)',
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 3,
+        textShadowColor: 'rgba(107, 47, 160, 0.3)',
+        textShadowOffset: { width: 2, height: 2 },
+        textShadowRadius: 10,
     },
     subtitle: {
-        color: 'rgba(107, 47, 160, 0.9)',
+        color: '#6b2fa0',
         textAlign: 'center',
         marginBottom: 30,
-        fontSize: 16,
-        textShadowColor: 'rgba(255, 255, 255, 0.5)',
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 2,
+        fontSize: 15,
+        fontWeight: '500',
     },
-    inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.25)',
-        borderRadius: 25,
-        paddingHorizontal: 20,
+    form: {
+        width: '100%',
+    },
+    inputGroup: {
         marginBottom: 20,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.4)',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 5,
-        elevation: 3,
-    },
-    inputIcon: {
-        marginRight: 10,
     },
     input: {
-        flex: 1,
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        borderRadius: 25,
+        paddingHorizontal: 20,
         paddingVertical: 15,
         color: '#2d1554',
         fontSize: 16,
-        fontWeight: '500',
+        borderWidth: 1,
+        borderColor: 'rgba(107, 47, 160, 0.3)',
     },
-    terms: {
+    errorText: {
+        color: '#d32f2f',
+        fontSize: 12,
+        marginTop: 5,
+        marginLeft: 20,
+    },
+    termsContainer: {
+        marginBottom: 25,
+    },
+    termsCheckContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 10,
-        marginBottom: 20,
     },
     checkbox: {
         width: 18,
         height: 18,
-        borderWidth: 2,
-        borderColor: 'rgba(107, 47, 160, 0.6)',
+        backgroundColor: 'rgba(255, 255, 255, 0.3)',
         borderRadius: 4,
         marginRight: 8,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        borderWidth: 1,
+        borderColor: 'rgba(107, 47, 160, 0.5)',
     },
     checkboxChecked: {
         backgroundColor: '#6b2fa0',
-        borderColor: '#6b2fa0',
+    },
+    checkmark: {
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: 'bold',
     },
     termsText: {
-        color: 'rgba(107, 47, 160, 0.9)',
+        color: '#6b2fa0',
         fontSize: 14,
         flex: 1,
         fontWeight: '500',
     },
     signupButton: {
         borderRadius: 25,
-        overflow: 'hidden',
-        marginTop: 25,
         marginBottom: 20,
+        marginTop: 5,
+        overflow: 'hidden',
+        elevation: 5,
         shadowColor: '#6b2fa0',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.4,
-        shadowRadius: 25,
-        elevation: 10,
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
     },
-    gradientButton: {
+    signupButtonDisabled: {
+        opacity: 0.7,
+    },
+    buttonGradient: {
         paddingVertical: 15,
         alignItems: 'center',
         justifyContent: 'center',
-    },
-    buttonDisabled: {
-        opacity: 0.7,
     },
     buttonText: {
         color: '#fff',
         fontSize: 18,
         fontWeight: 'bold',
     },
-    spinnerContainer: {
-        padding: 2,
-    },
-    spinner: {
-        width: 20,
-        height: 20,
-        borderRadius: 10,
-        borderWidth: 2,
-        borderColor: 'rgba(255, 255, 255, 0.3)',
-        borderTopColor: '#ffffff',
-    },
     loginLink: {
+        textAlign: 'center',
+        color: 'rgba(107, 47, 160, 0.8)',
+        fontSize: 14,
+        marginTop: 10,
+        paddingTop: 15,
         borderTopWidth: 1,
         borderTopColor: 'rgba(107, 47, 160, 0.3)',
-        paddingTop: 20,
-        marginTop: 10,
     },
-    loginText: {
-        color: 'rgba(107, 47, 160, 0.9)',
-        textAlign: 'center',
-        fontSize: 14,
-        fontWeight: '500',
-    },
-    loginLinkText: {
+    loginLinkBold: {
         color: '#6b2fa0',
-        fontWeight: 'bold',
-        textShadowColor: 'rgba(255, 255, 255, 0.5)',
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 2,
+        fontWeight: '600',
     },
 });

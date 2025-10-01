@@ -1,204 +1,207 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     View,
     Text,
     TextInput,
     TouchableOpacity,
-    ScrollView,
+    StyleSheet,
+    Dimensions,
     Animated,
-    Easing,
-    Alert,
+    StatusBar,
+    ScrollView,
+    ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
-    Dimensions,
-    StyleSheet,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 
 const { width, height } = Dimensions.get('window');
 
-export default function LoginScreen({ navigation }) {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [rememberMe, setRememberMe] = useState(false);
-    const [loading, setLoading] = useState(false);
-
-    const fadeAnim = useRef(new Animated.Value(0)).current;
-    const slideAnim = useRef(new Animated.Value(50)).current;
-    const floatingBalls = useRef([]);
+const FloatingShape = ({ size, color, initialX, initialY, animationDelay }) => {
+    const animatedValue = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
-        // Animação de entrada
+        const animation = Animated.loop(
+            Animated.sequence([
+                Animated.timing(animatedValue, {
+                    toValue: 1,
+                    duration: 8000 + Math.random() * 2000,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(animatedValue, {
+                    toValue: 0,
+                    duration: 8000 + Math.random() * 2000,
+                    useNativeDriver: true,
+                }),
+            ]),
+            { iterations: -1 }
+        );
+
+        setTimeout(() => {
+            animation.start();
+        }, animationDelay);
+
+        return () => animation.stop();
+    }, []);
+
+    const translateY = animatedValue.interpolate({
+        inputRange: [0, 0.25, 0.5, 0.75, 1],
+        outputRange: [0, -10, 5, -5, 0],
+    });
+
+    const translateX = animatedValue.interpolate({
+        inputRange: [0, 0.25, 0.5, 0.75, 1],
+        outputRange: [0, 5, -5, 10, 0],
+    });
+
+    return (
+        <Animated.View
+            style={[
+                styles.floatingShape,
+                {
+                    width: size,
+                    height: size,
+                    left: initialX,
+                    top: initialY,
+                    backgroundColor: color === 'purple'
+                        ? 'rgba(107, 47, 160, 0.8)'
+                        : 'rgba(255, 215, 0)',
+                    transform: [
+                        { translateX },
+                        { translateY },
+                    ],
+                },
+            ]}
+        />
+    );
+};
+
+const LoginScreen = ({ navigation }) => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [emailError, setEmailError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
+
+    const cardScale = useRef(new Animated.Value(0.9)).current;
+    const cardOpacity = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
         Animated.parallel([
-            Animated.timing(fadeAnim, {
+            Animated.spring(cardScale, {
                 toValue: 1,
-                duration: 1000,
+                tension: 50,
+                friction: 7,
                 useNativeDriver: true,
             }),
-            Animated.timing(slideAnim, {
-                toValue: 0,
+            Animated.timing(cardOpacity, {
+                toValue: 1,
                 duration: 800,
-                easing: Easing.out(Easing.cubic),
                 useNativeDriver: true,
             }),
         ]).start();
-
-        initializeFloatingBalls();
     }, []);
 
-    const initializeFloatingBalls = () => {
-        const balls = [];
-        const colors = ['#4a1f7a', '#f6ad55', '#4a1f7a', '#f6ad55', '#4a1f7a'];
-        const sizes = [40, 30, 50, 20, 15];
-
-        // Definir áreas seguras onde as bolinhas NÃO podem aparecer (onde fica o card)
-        const cardArea = {
-            left: 20,
-            right: width - 20,
-            top: height * 0.2,
-            bottom: height * 0.8
-        };
-
-        for (let i = 0; i < 25; i++) {
-            const anim = new Animated.Value(0);
-
-            // Gerar posições que evitem a área do card
-            let startX, startY;
-            let attempts = 0;
-
-            do {
-                startX = Math.random() * width;
-                startY = Math.random() * height;
-                attempts++;
-
-                // Se depois de 10 tentativas não encontrar posição, aceita qualquer uma
-                if (attempts > 10) break;
-
-            } while (
-                startX > cardArea.left &&
-                startX < cardArea.right &&
-                startY > cardArea.top &&
-                startY < cardArea.bottom
-            );
-
-            balls.push({
-                anim,
-                color: colors[i % colors.length],
-                size: sizes[i % sizes.length],
-                startX,
-                startY,
-            });
-
-            // Animação de flutuação mais suave
-            const floatAnimation = Animated.sequence([
-                Animated.timing(anim, {
-                    toValue: 1,
-                    duration: 5000 + Math.random() * 4000,
-                    easing: Easing.inOut(Easing.sin),
-                    useNativeDriver: true,
-                }),
-                Animated.timing(anim, {
-                    toValue: 0,
-                    duration: 5000 + Math.random() * 4000,
-                    easing: Easing.inOut(Easing.sin),
-                    useNativeDriver: true,
-                }),
-            ]);
-
-            Animated.loop(floatAnimation).start();
-        }
-        floatingBalls.current = balls;
+    const validateEmail = (email) => {
+        const emailRegex = /\S+@\S+\.\S+/;
+        return emailRegex.test(email);
     };
 
-    const renderFloatingBalls = () => {
-        return floatingBalls.current.map((ball, index) => {
-            const translateY = ball.anim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, -15 + Math.random() * 30], // Movimento mais suave
-            });
+    const handleEmailChange = (text) => {
+        setEmail(text);
+        if (emailError && text) {
+            setEmailError('');
+        }
+    };
 
-            const translateX = ball.anim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, -10 + Math.random() * 20], // Movimento mais suave
-            });
-
-            const scale = ball.anim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0.9, 1.1],
-            });
-
-            const opacity = ball.anim.interpolate({
-                inputRange: [0, 0.5, 1],
-                outputRange: [0.4, 0.6, 0.4], // Opacidade mais baixa
-            });
-
-            return (
-                <Animated.View
-                    key={index}
-                    style={{
-                        position: 'absolute',
-                        width: ball.size,
-                        height: ball.size,
-                        borderRadius: ball.size / 2,
-                        backgroundColor: ball.color,
-                        left: ball.startX,
-                        top: ball.startY,
-                        opacity: opacity,
-                        transform: [{ translateY }, { translateX }, { scale }],
-                        zIndex: 1, // Mantém as bolinhas atrás do conteúdo
-                    }}
-                />
-            );
-        });
+    const handlePasswordChange = (text) => {
+        setPassword(text);
+        if (passwordError && text) {
+            setPasswordError('');
+        }
     };
 
     const validateForm = () => {
+        let isValid = true;
+
         if (!email) {
-            Alert.alert('Erro', 'Email é obrigatório');
-            return false;
+            setEmailError('Email é obrigatório');
+            isValid = false;
+        } else if (!validateEmail(email)) {
+            setEmailError('Email inválido');
+            isValid = false;
         }
-        if (!/\S+@\S+\.\S+/.test(email)) {
-            Alert.alert('Erro', 'Email inválido');
-            return false;
-        }
+
         if (!password) {
-            Alert.alert('Erro', 'Senha é obrigatória');
-            return false;
+            setPasswordError('Senha é obrigatória');
+            isValid = false;
+        } else if (password.length < 6) {
+            setPasswordError('Senha deve ter pelo menos 6 caracteres');
+            isValid = false;
         }
-        if (password.length < 6) {
-            Alert.alert('Erro', 'Senha deve ter pelo menos 6 caracteres');
-            return false;
-        }
-        return true;
+
+        return isValid;
     };
 
     const handleLogin = () => {
-        if (!validateForm()) return;
+        if (validateForm()) {
+            setIsLoading(true);
 
-        setLoading(true);
+            // Simulate loading
+            setTimeout(() => {
+                setIsLoading(false);
+                navigation.navigate('Loading', {
+                    message: 'Bem-vindo ao ArtFlow Kids!'
+                });
+            }, 2000);
+        }
+    };
 
-        // Simular processo de login
-        setTimeout(() => {
-            setLoading(false);
-            Alert.alert('Sucesso', 'Login realizado com sucesso!');
-        }, 1500);
+    const generateFloatingShapes = () => {
+        const shapes = [];
+        const shapeConfigs = [
+            { size: 60, color: 'purple', count: 8 },
+            { size: 40, color: 'white', count: 6 },
+            { size: 80, color: 'purple', count: 4 },
+            { size: 25, color: 'white', count: 10 },
+            { size: 15, color: 'purple', count: 15 },
+        ];
+
+        let shapeId = 0;
+        shapeConfigs.forEach((config) => {
+            for (let i = 0; i < config.count; i++) {
+                shapes.push(
+                    <FloatingShape
+                        key={shapeId++}
+                        size={config.size}
+                        color={config.color}
+                        initialX={Math.random() * (width - config.size)}
+                        initialY={Math.random() * (height - config.size)}
+                        animationDelay={Math.random() * 3000}
+                    />
+                );
+            }
+        });
+
+        return shapes;
     };
 
     return (
         <View style={styles.container}>
-            {/* Background com gradiente */}
+            <StatusBar barStyle="light-content" backgroundColor="#0f0820" />
+
+            {/* Background Gradient - Mantendo as cores originais do Login */}
             <LinearGradient
                 colors={['#0f0820', '#1a0f3a', '#2d1554']}
-                style={styles.background}
-            >
-                {/* Blobs grandes */}
-                <View style={styles.blob1} />
-                <View style={styles.blob2} />
+                style={styles.backgroundGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+            />
 
-                {/* Bolinhas flutuantes - zIndex baixo para ficar atrás */}
-                {renderFloatingBalls()}
-            </LinearGradient>
+            {/* Floating Shapes */}
+            {generateFloatingShapes()}
 
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -210,227 +213,185 @@ export default function LoginScreen({ navigation }) {
                 >
                     <Animated.View
                         style={[
-                            styles.animatedContainer,
+                            styles.loginCard,
                             {
-                                opacity: fadeAnim,
-                                transform: [{ translateY: slideAnim }],
-                            }
+                                transform: [{ scale: cardScale }],
+                                opacity: cardOpacity,
+                            },
                         ]}
                     >
-                        {/* Card com zIndex alto para ficar na frente */}
-                        <View style={styles.card}>
+                        <BlurView intensity={20} style={styles.blurView}>
                             <Text style={styles.logo}>artflow</Text>
                             <Text style={styles.subtitle}>Sua plataforma de arte digital</Text>
 
-                            {/* Input Email */}
-                            <View style={styles.inputContainer}>
-                                <Ionicons
-                                    name="mail-outline"
-                                    size={20}
-                                    color="rgba(255, 215, 0, 0.7)"
-                                    style={styles.inputIcon}
-                                />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="E-mail educacional"
-                                    placeholderTextColor="rgba(255, 215, 0, 0.7)"
-                                    value={email}
-                                    onChangeText={setEmail}
-                                    keyboardType="email-address"
-                                    autoCapitalize="none"
-                                />
-                            </View>
+                            <View style={styles.form}>
+                                {/* Email Input */}
+                                <View style={styles.inputGroup}>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="E-mail educacional"
+                                        placeholderTextColor="rgba(255, 255, 255, 0.7)"
+                                        value={email}
+                                        onChangeText={handleEmailChange}
+                                        keyboardType="email-address"
+                                        autoCapitalize="none"
+                                        autoCorrect={false}
+                                    />
+                                    {emailError ? (
+                                        <Text style={styles.errorText}>{emailError}</Text>
+                                    ) : null}
+                                </View>
 
-                            {/* Input Senha */}
-                            <View style={styles.inputContainer}>
-                                <Ionicons
-                                    name="lock-closed-outline"
-                                    size={20}
-                                    color="rgba(255, 215, 0, 0.7)"
-                                    style={styles.inputIcon}
-                                />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Senha"
-                                    placeholderTextColor="rgba(255, 215, 0, 0.7)"
-                                    value={password}
-                                    onChangeText={setPassword}
-                                    secureTextEntry
-                                />
-                            </View>
+                                {/* Password Input */}
+                                <View style={styles.inputGroup}>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Senha"
+                                        placeholderTextColor="rgba(255, 255, 255, 0.7)"
+                                        value={password}
+                                        onChangeText={handlePasswordChange}
+                                        secureTextEntry
+                                        autoCapitalize="none"
+                                        autoCorrect={false}
+                                    />
+                                    {passwordError ? (
+                                        <Text style={styles.errorText}>{passwordError}</Text>
+                                    ) : null}
+                                </View>
 
-                            <View style={styles.rememberForgot}>
-                                <TouchableOpacity
-                                    style={styles.rememberMe}
-                                    onPress={() => setRememberMe(!rememberMe)}
-                                >
-                                    <View style={[
-                                        styles.checkbox,
-                                        rememberMe && styles.checkboxChecked
-                                    ]}>
-                                        {rememberMe && <Ionicons name="checkmark" size={14} color="#1a0f3a" />}
-                                    </View>
-                                    <Text style={styles.rememberText}>Lembrar-me</Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity>
-                                    <Text style={styles.forgotPassword}>Esqueceu a senha?</Text>
-                                </TouchableOpacity>
-                            </View>
-
-                            <TouchableOpacity
-                                style={[styles.loginButton, loading && styles.buttonDisabled]}
-                                onPress={handleLogin}
-                                disabled={loading}
-                                activeOpacity={0.8}
-                            >
-                                <LinearGradient
-                                    colors={['#ffd700', '#f6ad55']}
-                                    style={styles.gradientButton}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 0 }}
-                                >
-                                    {loading ? (
-                                        <View style={styles.spinnerContainer}>
-                                            <Animated.View style={styles.spinner} />
-                                        </View>
-                                    ) : (
-                                        <Text style={styles.buttonText}>Entrar</Text>
-                                    )}
-                                </LinearGradient>
-                            </TouchableOpacity>
-
-                            <View style={styles.signupLink}>
-                                <Text style={styles.signupText}>
-                                    Não tem uma conta?{' '}
-                                    <Text
-                                        style={styles.signupLinkText}
-                                        onPress={() => navigation.navigate('Signup')}
+                                {/* Remember Me & Forgot Password */}
+                                <View style={styles.rememberForgot}>
+                                    <TouchableOpacity
+                                        style={styles.rememberMe}
+                                        onPress={() => setRememberMe(!rememberMe)}
                                     >
-                                        Cadastre-se
+                                        <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+                                            {rememberMe && <Text style={styles.checkmark}>✓</Text>}
+                                        </View>
+                                        <Text style={styles.rememberText}>Lembrar-me</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity>
+                                        <Text style={styles.forgotPassword}>Esqueceu a senha?</Text>
+                                    </TouchableOpacity>
+                                </View>
+
+                                {/* Login Button */}
+                                <TouchableOpacity
+                                    style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
+                                    onPress={handleLogin}
+                                    disabled={isLoading}
+                                >
+                                    <LinearGradient
+                                        colors={['#6b2fa0', '#4a1f7a']}
+                                        style={styles.buttonGradient}
+                                        start={{ x: 0, y: 0 }}
+                                        end={{ x: 1, y: 0 }}
+                                    >
+                                        {isLoading ? (
+                                            <ActivityIndicator color="#fff" size="small" />
+                                        ) : (
+                                            <Text style={styles.buttonText}>Entrar</Text>
+                                        )}
+                                    </LinearGradient>
+                                </TouchableOpacity>
+
+                                {/* Signup Link */}
+                                <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+                                    <Text style={styles.signupLink}>
+                                        Não tem uma conta?{' '}
+                                        <Text style={styles.signupLinkBold}>Cadastre-se</Text>
                                     </Text>
-                                </Text>
+                                </TouchableOpacity>
                             </View>
-                        </View>
+                        </BlurView>
                     </Animated.View>
                 </ScrollView>
             </KeyboardAvoidingView>
         </View>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
-    background: {
+    backgroundGradient: {
         position: 'absolute',
-        top: 0,
         left: 0,
         right: 0,
-        bottom: 0,
-        zIndex: 0, // Fundo atrás de tudo
-    },
-    blob1: {
-        position: 'absolute',
-        width: 300,
-        height: 250,
-        backgroundColor: '#2d1454',
-        opacity: 0.2, // Opacidade mais baixa
-        bottom: -50,
-        left: -100,
-        borderRadius: 140,
-        transform: [{ rotate: '0deg' }],
-        zIndex: 1,
-    },
-    blob2: {
-        position: 'absolute',
-        width: 200,
-        height: 180,
-        backgroundColor: '#2d1454',
-        opacity: 0.2, // Opacidade mais baixa
-        top: -30,
-        right: -50,
-        borderRadius: 100,
-        transform: [{ rotate: '0deg' }],
-        zIndex: 1,
+        top: 0,
+        height: height,
     },
     keyboardAvoid: {
         flex: 1,
-        zIndex: 10, // Conteúdo na frente
     },
     scrollContent: {
         flexGrow: 1,
         justifyContent: 'center',
-        minHeight: height,
+        paddingHorizontal: 20,
+        paddingVertical: 40,
     },
-    animatedContainer: {
-        marginHorizontal: 20,
-        zIndex: 20, // Card na frente das bolinhas
+    floatingShape: {
+        position: 'absolute',
+        borderRadius: 999,
     },
-    card: {
-        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    loginCard: {
         borderRadius: 20,
-        padding: 30,
+        overflow: 'hidden',
+        marginHorizontal: 10,
+    },
+    blurView: {
+        padding: 35,
+        backgroundColor: 'rgba(31, 7, 53, 0.6)',
         borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.2)',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.4, // Sombra mais forte para destacar
-        shadowRadius: 25,
-        elevation: 15, // Elevação maior no Android
-        zIndex: 30, // Card com zIndex mais alto
+        borderColor: 'rgba(107, 47, 160, 0.7)',
     },
     logo: {
-        fontSize: 36,
+        fontSize: 40,
         fontWeight: '300',
         color: '#ffd700',
         textAlign: 'center',
         marginBottom: 10,
         fontStyle: 'italic',
-        textShadowColor: 'rgba(0, 0, 0, 0.5)', // Sombra no texto para melhor contraste
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 3,
+        textShadowColor: 'rgba(255, 215, 0, 0.3)',
+        textShadowOffset: { width: 2, height: 2 },
+        textShadowRadius: 10,
     },
     subtitle: {
-        color: 'rgba(255, 255, 255, 0.9)', // Cor mais forte para melhor legibilidade
+        color: 'rgba(255, 255, 255, 0.9)',
         textAlign: 'center',
         marginBottom: 30,
-        fontSize: 16,
-        textShadowColor: 'rgba(0, 0, 0, 0.3)',
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 2,
+        fontSize: 15,
+        fontWeight: '500',
     },
-    inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        borderRadius: 25,
-        paddingHorizontal: 20,
+    form: {
+        width: '100%',
+    },
+    inputGroup: {
         marginBottom: 20,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.3)',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 5,
-        elevation: 3,
-    },
-    inputIcon: {
-        marginRight: 10,
     },
     input: {
-        flex: 1,
+        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+        borderRadius: 25,
+        paddingHorizontal: 20,
         paddingVertical: 15,
         color: '#fff',
         fontSize: 16,
-        fontWeight: '500', // Texto mais forte
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.2)',
+    },
+    errorText: {
+        color: '#ff6b6b',
+        fontSize: 12,
+        marginTop: 5,
+        marginLeft: 20,
     },
     rememberForgot: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 20,
+        marginBottom: 25,
     },
     rememberMe: {
         flexDirection: 'row',
@@ -439,17 +400,21 @@ const styles = StyleSheet.create({
     checkbox: {
         width: 18,
         height: 18,
-        borderWidth: 2,
-        borderColor: 'rgba(255, 255, 255, 0.5)',
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
         borderRadius: 4,
         marginRight: 8,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.4)',
     },
     checkboxChecked: {
         backgroundColor: '#ffd700',
-        borderColor: '#ffd700',
+    },
+    checkmark: {
+        color: '#1a0f3a',
+        fontSize: 12,
+        fontWeight: 'bold',
     },
     rememberText: {
         color: 'rgba(255, 255, 255, 0.9)',
@@ -460,62 +425,44 @@ const styles = StyleSheet.create({
         color: '#ffd700',
         fontSize: 14,
         fontWeight: '500',
-        textShadowColor: 'rgba(0, 0, 0, 0.3)',
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 2,
     },
     loginButton: {
         borderRadius: 25,
+        marginBottom: 20,
+        marginTop: 5,
         overflow: 'hidden',
-        marginTop: 15,
-        marginBottom: 15,
-        shadowColor: '#ffd700',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.4,
-        shadowRadius: 25,
-        elevation: 10,
+        elevation: 5,
+        shadowColor: '#6b2fa0',
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
     },
-    gradientButton: {
+    loginButtonDisabled: {
+        opacity: 0.7,
+    },
+    buttonGradient: {
         paddingVertical: 15,
         alignItems: 'center',
         justifyContent: 'center',
     },
-    buttonDisabled: {
-        opacity: 0.7,
-    },
     buttonText: {
-        color: '#1a0f3a',
+        color: '#fff',
         fontSize: 18,
         fontWeight: 'bold',
     },
-    spinnerContainer: {
-        padding: 2,
-    },
-    spinner: {
-        width: 20,
-        height: 20,
-        borderRadius: 10,
-        borderWidth: 2,
-        borderColor: 'rgba(26, 15, 58, 0.3)',
-        borderTopColor: '#1a0f3a',
-    },
     signupLink: {
+        textAlign: 'center',
+        color: 'rgba(255, 255, 255, 0.8)',
+        fontSize: 14,
+        marginTop: 10,
+        paddingTop: 15,
         borderTopWidth: 1,
         borderTopColor: 'rgba(255, 215, 0, 0.5)',
-        paddingTop: 20,
-        marginTop: 10,
     },
-    signupText: {
-        color: 'rgba(255, 255, 255, 0.9)',
-        textAlign: 'center',
-        fontSize: 14,
-        fontWeight: '500',
-    },
-    signupLinkText: {
+    signupLinkBold: {
         color: '#ffd700',
-        fontWeight: 'bold',
-        textShadowColor: 'rgba(0, 0, 0, 0.3)',
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 2,
+        fontWeight: '600',
     },
 });
+
+export default LoginScreen;
