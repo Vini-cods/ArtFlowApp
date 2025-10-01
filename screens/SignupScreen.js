@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
     },
     blurView: {
         padding: 35,
-        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+        backgroundColor: 'rgba(188, 187, 187, 0.7)',
         borderWidth: 1,
         borderColor: 'rgba(107, 47, 160, 0.8)',
     },

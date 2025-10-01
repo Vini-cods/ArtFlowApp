@@ -18,6 +18,37 @@ import { BlurView } from 'expo-blur';
 
 const { width, height } = Dimensions.get('window');
 
+// Gerar posições fixas para as bolinhas (igual ao SignupScreen)
+const generateFixedPositions = () => {
+    const positions = [];
+    const shapeConfigs = [
+        { size: 60, color: 'purple', count: 8 },
+        { size: 40, color: 'white', count: 6 },
+        { size: 80, color: 'purple', count: 4 },
+        { size: 25, color: 'white', count: 10 },
+        { size: 15, color: 'purple', count: 15 },
+    ];
+
+    let shapeId = 0;
+    shapeConfigs.forEach((config) => {
+        for (let i = 0; i < config.count; i++) {
+            positions.push({
+                id: shapeId++,
+                size: config.size,
+                color: config.color,
+                initialX: Math.random() * (width - config.size),
+                initialY: Math.random() * (height - config.size),
+                animationDelay: Math.random() * 3000
+            });
+        }
+    });
+
+    return positions;
+};
+
+// Posições fixas (fora do componente para não regenerar)
+const fixedShapes = generateFixedPositions();
+
 const FloatingShape = ({ size, color, initialX, initialY, animationDelay }) => {
     const animatedValue = useRef(new Animated.Value(0)).current;
 
@@ -66,7 +97,7 @@ const FloatingShape = ({ size, color, initialX, initialY, animationDelay }) => {
                     top: initialY,
                     backgroundColor: color === 'purple'
                         ? 'rgba(107, 47, 160, 0.8)'
-                        : 'rgba(255, 215, 0)',
+                        : 'rgba(255, 255, 255, 0.4)',
                     transform: [
                         { translateX },
                         { translateY },
@@ -159,35 +190,6 @@ const LoginScreen = ({ navigation }) => {
         }
     };
 
-    const generateFloatingShapes = () => {
-        const shapes = [];
-        const shapeConfigs = [
-            { size: 60, color: 'purple', count: 8 },
-            { size: 40, color: 'white', count: 6 },
-            { size: 80, color: 'purple', count: 4 },
-            { size: 25, color: 'white', count: 10 },
-            { size: 15, color: 'purple', count: 15 },
-        ];
-
-        let shapeId = 0;
-        shapeConfigs.forEach((config) => {
-            for (let i = 0; i < config.count; i++) {
-                shapes.push(
-                    <FloatingShape
-                        key={shapeId++}
-                        size={config.size}
-                        color={config.color}
-                        initialX={Math.random() * (width - config.size)}
-                        initialY={Math.random() * (height - config.size)}
-                        animationDelay={Math.random() * 3000}
-                    />
-                );
-            }
-        });
-
-        return shapes;
-    };
-
     return (
         <View style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="#0f0820" />
@@ -200,8 +202,17 @@ const LoginScreen = ({ navigation }) => {
                 end={{ x: 1, y: 1 }}
             />
 
-            {/* Floating Shapes */}
-            {generateFloatingShapes()}
+            {/* Floating Shapes Fixas (igual ao SignupScreen) */}
+            {fixedShapes.map((shape) => (
+                <FloatingShape
+                    key={shape.id}
+                    size={shape.size}
+                    color={shape.color}
+                    initialX={shape.initialX}
+                    initialY={shape.initialY}
+                    animationDelay={shape.animationDelay}
+                />
+            ))}
 
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -343,7 +354,7 @@ const styles = StyleSheet.create({
     },
     blurView: {
         padding: 35,
-        backgroundColor: 'rgba(31, 7, 53, 0.6)',
+        backgroundColor: 'rgba(19, 2, 35, 0.6)',
         borderWidth: 1,
         borderColor: 'rgba(107, 47, 160, 0.7)',
     },
