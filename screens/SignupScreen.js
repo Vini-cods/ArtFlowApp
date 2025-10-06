@@ -11,7 +11,8 @@ import {
     ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
-    ScrollView
+    ScrollView,
+    StatusBar
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -194,171 +195,176 @@ export default function SignupScreen({ navigation }) {
 
             // Simular processo de cadastro
             setTimeout(() => {
-                navigation.navigate('Loading', {
-                    nextScreen: 'Login',
-                    message: 'Cadastro Realizado',
-                    progressText: 'Redirecionando para login...'
-                });
-            }, 1000);
+                setLoading(false);
+                // Navegar diretamente para o Login após cadastro
+                navigation.navigate('Login');
+            }, 2000);
         }
     };
 
     return (
         <View style={styles.container}>
+            <StatusBar barStyle="light-content" backgroundColor="#0f0820" />
+
+            {/* Background Gradient */}
             <LinearGradient
                 colors={['#ffd700', '#f6ad55', '#ffcc00']}
                 style={styles.gradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
+            />
+
+            {/* Floating Shapes Fixas */}
+            {fixedShapes.map((shape) => (
+                <FloatingShape
+                    key={shape.id}
+                    size={shape.size}
+                    color={shape.color}
+                    initialX={shape.initialX}
+                    initialY={shape.initialY}
+                    animationDelay={shape.animationDelay}
+                />
+            ))}
+
+            {/* Overlay escuro com blur para melhor contraste */}
+            <BlurView intensity={25} tint="dark" style={styles.overlayBlur} />
+            <View style={styles.overlayDark} />
+
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={styles.keyboardAvoid}
             >
-                {/* Floating Shapes Fixas */}
-                {fixedShapes.map((shape) => (
-                    <FloatingShape
-                        key={shape.id}
-                        size={shape.size}
-                        color={shape.color}
-                        initialX={shape.initialX}
-                        initialY={shape.initialY}
-                        animationDelay={shape.animationDelay}
-                    />
-                ))}
-
-                <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    style={styles.keyboardAvoid}
+                <ScrollView
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
                 >
-                    <ScrollView
-                        contentContainerStyle={styles.scrollContent}
-                        showsVerticalScrollIndicator={false}
+                    <Animated.View
+                        style={[
+                            styles.signupCard,
+                            {
+                                transform: [{ scale: cardScale }],
+                                opacity: cardOpacity,
+                            },
+                        ]}
                     >
-                        <Animated.View
-                            style={[
-                                styles.signupCard,
-                                {
-                                    transform: [{ scale: cardScale }],
-                                    opacity: cardOpacity,
-                                },
-                            ]}
-                        >
-                            <BlurView intensity={20} style={styles.blurView}>
-                                <Text style={styles.logo}>artflow</Text>
-                                <Text style={styles.subtitle}>Crie sua conta na plataforma de arte digital</Text>
+                        <BlurView intensity={35} tint="dark" style={styles.blurView}>
+                            <Text style={styles.logo}>artflow</Text>
+                            <Text style={styles.subtitle}>Crie sua conta na plataforma de arte digital</Text>
 
-                                <View style={styles.form}>
-                                    <View style={styles.inputGroup}>
-                                        <TextInput
-                                            style={styles.input}
-                                            placeholder="Nome completo"
-                                            placeholderTextColor="rgba(107, 47, 160, 0.7)"
-                                            value={name}
-                                            onChangeText={(text) => {
-                                                setName(text);
-                                                if (text) setNameError('');
-                                            }}
-                                        />
-                                        {nameError ? (
-                                            <Text style={styles.errorText}>{nameError}</Text>
-                                        ) : null}
-                                    </View>
+                            <View style={styles.form}>
+                                <View style={styles.inputGroup}>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Nome completo"
+                                        placeholderTextColor="rgba(255, 255, 255, 0.7)"
+                                        value={name}
+                                        onChangeText={(text) => {
+                                            setName(text);
+                                            if (text) setNameError('');
+                                        }}
+                                    />
+                                    {nameError ? (
+                                        <Text style={styles.errorText}>{nameError}</Text>
+                                    ) : null}
+                                </View>
 
-                                    <View style={styles.inputGroup}>
-                                        <TextInput
-                                            style={styles.input}
-                                            placeholder="E-mail educacional"
-                                            placeholderTextColor="rgba(107, 47, 160, 0.7)"
-                                            value={email}
-                                            onChangeText={(text) => {
-                                                setEmail(text);
-                                                if (text) setEmailError('');
-                                            }}
-                                            keyboardType="email-address"
-                                            autoCapitalize="none"
-                                        />
-                                        {emailError ? (
-                                            <Text style={styles.errorText}>{emailError}</Text>
-                                        ) : null}
-                                    </View>
+                                <View style={styles.inputGroup}>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="E-mail educacional"
+                                        placeholderTextColor="rgba(255, 255, 255, 0.7)"
+                                        value={email}
+                                        onChangeText={(text) => {
+                                            setEmail(text);
+                                            if (text) setEmailError('');
+                                        }}
+                                        keyboardType="email-address"
+                                        autoCapitalize="none"
+                                    />
+                                    {emailError ? (
+                                        <Text style={styles.errorText}>{emailError}</Text>
+                                    ) : null}
+                                </View>
 
-                                    <View style={styles.inputGroup}>
-                                        <TextInput
-                                            style={styles.input}
-                                            placeholder="Senha"
-                                            placeholderTextColor="rgba(107, 47, 160, 0.7)"
-                                            value={password}
-                                            onChangeText={(text) => {
-                                                setPassword(text);
-                                                if (text) setPasswordError('');
-                                            }}
-                                            secureTextEntry
-                                        />
-                                        {passwordError ? (
-                                            <Text style={styles.errorText}>{passwordError}</Text>
-                                        ) : null}
-                                    </View>
+                                <View style={styles.inputGroup}>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Senha"
+                                        placeholderTextColor="rgba(255, 255, 255, 0.7)"
+                                        value={password}
+                                        onChangeText={(text) => {
+                                            setPassword(text);
+                                            if (text) setPasswordError('');
+                                        }}
+                                        secureTextEntry
+                                    />
+                                    {passwordError ? (
+                                        <Text style={styles.errorText}>{passwordError}</Text>
+                                    ) : null}
+                                </View>
 
-                                    <View style={styles.inputGroup}>
-                                        <TextInput
-                                            style={styles.input}
-                                            placeholder="Confirmar senha"
-                                            placeholderTextColor="rgba(107, 47, 160, 0.7)"
-                                            value={confirmPassword}
-                                            onChangeText={(text) => {
-                                                setConfirmPassword(text);
-                                                if (text) setConfirmPasswordError('');
-                                            }}
-                                            secureTextEntry
-                                        />
-                                        {confirmPasswordError ? (
-                                            <Text style={styles.errorText}>{confirmPasswordError}</Text>
-                                        ) : null}
-                                    </View>
+                                <View style={styles.inputGroup}>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Confirmar senha"
+                                        placeholderTextColor="rgba(255, 255, 255, 0.7)"
+                                        value={confirmPassword}
+                                        onChangeText={(text) => {
+                                            setConfirmPassword(text);
+                                            if (text) setConfirmPasswordError('');
+                                        }}
+                                        secureTextEntry
+                                    />
+                                    {confirmPasswordError ? (
+                                        <Text style={styles.errorText}>{confirmPasswordError}</Text>
+                                    ) : null}
+                                </View>
 
-                                    <View style={styles.termsContainer}>
-                                        <TouchableOpacity
-                                            style={styles.termsCheckContainer}
-                                            onPress={() => setAcceptTerms(!acceptTerms)}
-                                        >
-                                            <View style={[
-                                                styles.checkbox,
-                                                acceptTerms && styles.checkboxChecked
-                                            ]}>
-                                                {acceptTerms && <Text style={styles.checkmark}>✓</Text>}
-                                            </View>
-                                            <Text style={styles.termsText}>Aceito os termos e condições</Text>
-                                        </TouchableOpacity>
-                                    </View>
-
+                                <View style={styles.termsContainer}>
                                     <TouchableOpacity
-                                        style={[styles.signupButton, loading && styles.signupButtonDisabled]}
-                                        onPress={handleSignup}
-                                        disabled={loading}
+                                        style={styles.termsCheckContainer}
+                                        onPress={() => setAcceptTerms(!acceptTerms)}
                                     >
-                                        <LinearGradient
-                                            colors={['#6b2fa0', '#4a1f7a']}
-                                            style={styles.buttonGradient}
-                                            start={{ x: 0, y: 0 }}
-                                            end={{ x: 1, y: 0 }}
-                                        >
-                                            {loading ? (
-                                                <ActivityIndicator color="#fff" size="small" />
-                                            ) : (
-                                                <Text style={styles.buttonText}>Cadastrar</Text>
-                                            )}
-                                        </LinearGradient>
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity onPress={() => navigation.goBack()}>
-                                        <Text style={styles.loginLink}>
-                                            Já tem uma conta?{' '}
-                                            <Text style={styles.loginLinkBold}>Faça login</Text>
-                                        </Text>
+                                        <View style={[
+                                            styles.checkbox,
+                                            acceptTerms && styles.checkboxChecked
+                                        ]}>
+                                            {acceptTerms && <Text style={styles.checkmark}>✓</Text>}
+                                        </View>
+                                        <Text style={styles.termsText}>Aceito os termos e condições</Text>
                                     </TouchableOpacity>
                                 </View>
-                            </BlurView>
-                        </Animated.View>
-                    </ScrollView>
-                </KeyboardAvoidingView>
-            </LinearGradient>
+
+                                <TouchableOpacity
+                                    style={[styles.signupButton, loading && styles.signupButtonDisabled]}
+                                    onPress={handleSignup}
+                                    disabled={loading}
+                                >
+                                    <LinearGradient
+                                        colors={['#6b2fa0', '#4a1f7a']}
+                                        style={styles.buttonGradient}
+                                        start={{ x: 0, y: 0 }}
+                                        end={{ x: 1, y: 0 }}
+                                    >
+                                        {loading ? (
+                                            <ActivityIndicator color="#fff" size="small" />
+                                        ) : (
+                                            <Text style={styles.buttonText}>Cadastrar</Text>
+                                        )}
+                                    </LinearGradient>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity onPress={() => navigation.goBack()}>
+                                    <Text style={styles.loginLink}>
+                                        Já tem uma conta?{' '}
+                                        <Text style={styles.loginLinkBold}>Faça login</Text>
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        </BlurView>
+                    </Animated.View>
+                </ScrollView>
+            </KeyboardAvoidingView>
         </View>
     );
 }
@@ -368,7 +374,26 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     gradient: {
-        flex: 1,
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        height: height,
+    },
+    overlayBlur: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        height: height,
+    },
+    overlayDark: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        height: height,
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
     },
     keyboardAvoid: {
         flex: 1,
@@ -390,23 +415,23 @@ const styles = StyleSheet.create({
     },
     blurView: {
         padding: 35,
-        backgroundColor: 'rgba(188, 187, 187, 0.7)',
+        backgroundColor: 'rgba(19, 2, 35, 0.7)',
         borderWidth: 1,
         borderColor: 'rgba(107, 47, 160, 0.8)',
     },
     logo: {
         fontSize: 40,
         fontWeight: '300',
-        color: '#6b2fa0',
+        color: '#ffd700',
         textAlign: 'center',
         marginBottom: 10,
         fontStyle: 'italic',
-        textShadowColor: 'rgba(107, 47, 160, 0.3)',
+        textShadowColor: 'rgba(255, 215, 0, 0.5)',
         textShadowOffset: { width: 2, height: 2 },
-        textShadowRadius: 10,
+        textShadowRadius: 15,
     },
     subtitle: {
-        color: '#6b2fa0',
+        color: 'rgba(255, 255, 255, 0.95)',
         textAlign: 'center',
         marginBottom: 30,
         fontSize: 15,
@@ -419,20 +444,23 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     input: {
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
         borderRadius: 25,
         paddingHorizontal: 20,
         paddingVertical: 15,
-        color: '#2d1554',
+        color: '#fff',
         fontSize: 16,
         borderWidth: 1,
-        borderColor: 'rgba(107, 47, 160, 0.3)',
+        borderColor: 'rgba(255, 255, 255, 0.3)',
     },
     errorText: {
-        color: '#d32f2f',
+        color: '#ff6b6b',
         fontSize: 12,
         marginTop: 5,
         marginLeft: 20,
+        textShadowColor: 'rgba(0, 0, 0, 0.5)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 2,
     },
     termsContainer: {
         marginBottom: 25,
@@ -444,24 +472,25 @@ const styles = StyleSheet.create({
     checkbox: {
         width: 18,
         height: 18,
-        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
         borderRadius: 4,
         marginRight: 8,
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: 'rgba(107, 47, 160, 0.5)',
+        borderColor: 'rgba(255, 255, 255, 0.5)',
     },
     checkboxChecked: {
-        backgroundColor: '#6b2fa0',
+        backgroundColor: '#ffd700',
+        borderColor: '#ffd700',
     },
     checkmark: {
-        color: '#fff',
+        color: '#1a0f3a',
         fontSize: 12,
         fontWeight: 'bold',
     },
     termsText: {
-        color: '#6b2fa0',
+        color: 'rgba(255, 255, 255, 0.95)',
         fontSize: 14,
         flex: 1,
         fontWeight: '500',
@@ -471,11 +500,11 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         marginTop: 5,
         overflow: 'hidden',
-        elevation: 5,
+        elevation: 8,
         shadowColor: '#6b2fa0',
-        shadowOffset: { width: 0, height: 5 },
-        shadowOpacity: 0.3,
-        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.4,
+        shadowRadius: 12,
     },
     signupButtonDisabled: {
         opacity: 0.7,
@@ -489,18 +518,24 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 18,
         fontWeight: 'bold',
+        textShadowColor: 'rgba(0, 0, 0, 0.3)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 2,
     },
     loginLink: {
         textAlign: 'center',
-        color: 'rgba(107, 47, 160, 0.8)',
+        color: 'rgba(255, 255, 255, 0.9)',
         fontSize: 14,
         marginTop: 10,
         paddingTop: 15,
         borderTopWidth: 1,
-        borderTopColor: 'rgba(107, 47, 160, 0.3)',
+        borderTopColor: 'rgba(255, 215, 0, 0.6)',
     },
     loginLinkBold: {
-        color: '#6b2fa0',
+        color: '#ffd700',
         fontWeight: '600',
+        textShadowColor: 'rgba(255, 215, 0, 0.3)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 2,
     },
 });
