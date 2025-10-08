@@ -17,15 +17,15 @@ import { LineChart, BarChart } from 'react-native-chart-kit';
 
 const { width, height } = Dimensions.get('window');
 
-// Gerar posições fixas para as bolinhas (igual ao SignupScreen)
+// Gerar posições fixas para as bolinhas com melhor distribuição
 const generateFixedPositions = () => {
     const positions = [];
     const shapeConfigs = [
-        { size: 60, color: 'purple', count: 8 },
-        { size: 40, color: 'white', count: 6 },
-        { size: 80, color: 'purple', count: 4 },
-        { size: 25, color: 'white', count: 10 },
-        { size: 15, color: 'purple', count: 15 },
+        { size: 80, color: 'gold', count: 3, opacity: 0.3 },
+        { size: 60, color: 'purple', count: 6, opacity: 0.4 },
+        { size: 40, color: 'white', count: 8, opacity: 0.2 },
+        { size: 25, color: 'gold', count: 12, opacity: 0.3 },
+        { size: 15, color: 'purple', count: 15, opacity: 0.25 },
     ];
 
     let shapeId = 0;
@@ -35,9 +35,11 @@ const generateFixedPositions = () => {
                 id: shapeId++,
                 size: config.size,
                 color: config.color,
+                opacity: config.opacity,
                 initialX: Math.random() * (width - config.size),
                 initialY: Math.random() * (height - config.size),
-                animationDelay: Math.random() * 3000
+                animationDelay: Math.random() * 5000,
+                animationDuration: 10000 + Math.random() * 8000
             });
         }
     });
@@ -48,7 +50,7 @@ const generateFixedPositions = () => {
 // Posições fixas (fora do componente para não regenerar)
 const fixedShapes = generateFixedPositions();
 
-const FloatingShape = ({ size, color, initialX, initialY, animationDelay }) => {
+const FloatingShape = ({ size, color, initialX, initialY, animationDelay, animationDuration, opacity }) => {
     const animatedValue = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
@@ -56,12 +58,12 @@ const FloatingShape = ({ size, color, initialX, initialY, animationDelay }) => {
             Animated.sequence([
                 Animated.timing(animatedValue, {
                     toValue: 1,
-                    duration: 8000 + Math.random() * 2000,
+                    duration: animationDuration,
                     useNativeDriver: true,
                 }),
                 Animated.timing(animatedValue, {
                     toValue: 0,
-                    duration: 8000 + Math.random() * 2000,
+                    duration: animationDuration,
                     useNativeDriver: true,
                 }),
             ]),
@@ -77,13 +79,31 @@ const FloatingShape = ({ size, color, initialX, initialY, animationDelay }) => {
 
     const translateY = animatedValue.interpolate({
         inputRange: [0, 0.25, 0.5, 0.75, 1],
-        outputRange: [0, -10, 5, -5, 0],
+        outputRange: [0, -15, 8, -8, 0],
     });
 
     const translateX = animatedValue.interpolate({
         inputRange: [0, 0.25, 0.5, 0.75, 1],
-        outputRange: [0, 5, -5, 10, 0],
+        outputRange: [0, 8, -8, 15, 0],
     });
+
+    const scale = animatedValue.interpolate({
+        inputRange: [0, 0.5, 1],
+        outputRange: [1, 1.1, 1],
+    });
+
+    const getBackgroundColor = () => {
+        switch (color) {
+            case 'gold':
+                return `rgba(255, 215, 0, ${opacity})`;
+            case 'purple':
+                return `rgba(107, 47, 160, ${opacity})`;
+            case 'white':
+                return `rgba(255, 255, 255, ${opacity})`;
+            default:
+                return `rgba(255, 215, 0, ${opacity})`;
+        }
+    };
 
     return (
         <Animated.View
@@ -94,20 +114,27 @@ const FloatingShape = ({ size, color, initialX, initialY, animationDelay }) => {
                     height: size,
                     left: initialX,
                     top: initialY,
-                    backgroundColor: color === 'purple'
-                        ? 'rgba(107, 47, 160, 0.8)'
-                        : 'rgba(255, 255, 255, 0.4)',
+                    backgroundColor: getBackgroundColor(),
                     transform: [
                         { translateX },
                         { translateY },
+                        { scale },
                     ],
+                    shadowColor: color === 'gold' ? '#ffd700' : color === 'purple' ? '#6b2fa0' : '#fff',
+                    shadowOffset: {
+                        width: 0,
+                        height: 0,
+                    },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 10,
+                    elevation: 5,
                 },
             ]}
         />
     );
 };
 
-// Componente de Card para métricas
+// Componente de Card para métricas - ATUALIZADO
 const MetricCard = ({ title, value, subtitle, icon, color, onPress }) => (
     <TouchableOpacity style={styles.metricCard} onPress={onPress}>
         <LinearGradient
@@ -122,7 +149,7 @@ const MetricCard = ({ title, value, subtitle, icon, color, onPress }) => (
                     <Text style={styles.metricValue}>{value}</Text>
                     <Text style={styles.metricSubtitle}>{subtitle}</Text>
                 </View>
-                <View style={styles.metricIcon}>
+                <View style={[styles.metricIcon, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
                     <Text style={styles.metricIconText}>{icon}</Text>
                 </View>
             </View>
@@ -130,10 +157,15 @@ const MetricCard = ({ title, value, subtitle, icon, color, onPress }) => (
     </TouchableOpacity>
 );
 
-// Componente de Card para histórias
+// Componente de Card para histórias - ATUALIZADO
 const StoryCard = ({ title, author, duration, category, onRead }) => (
     <TouchableOpacity style={styles.storyCard} onPress={onRead}>
-        <BlurView intensity={25} tint="dark" style={styles.storyBlur}>
+        <LinearGradient
+            colors={['rgba(107, 47, 160, 0.7)', 'rgba(74, 31, 122, 0.8)']}
+            style={styles.storyGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+        >
             <View style={styles.storyHeader}>
                 <Text style={styles.storyTitle}>{title}</Text>
                 <View style={styles.storyCategory}>
@@ -144,10 +176,17 @@ const StoryCard = ({ title, author, duration, category, onRead }) => (
             <View style={styles.storyFooter}>
                 <Text style={styles.storyDuration}>⏱️ {duration} min</Text>
                 <TouchableOpacity style={styles.readButton} onPress={onRead}>
-                    <Text style={styles.readButtonText}>Ler para o filho</Text>
+                    <LinearGradient
+                        colors={['#ffd700', '#f6ad55']}
+                        style={styles.readButtonGradient}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                    >
+                        <Text style={styles.readButtonText}>Ler para o filho</Text>
+                    </LinearGradient>
                 </TouchableOpacity>
             </View>
-        </BlurView>
+        </LinearGradient>
     </TouchableOpacity>
 );
 
@@ -158,6 +197,7 @@ export default function ParentDashboardScreen({ navigation }) {
 
     const cardScale = useRef(new Animated.Value(0.9)).current;
     const cardOpacity = useRef(new Animated.Value(0)).current;
+    const headerSlide = useRef(new Animated.Value(50)).current;
 
     // Dados simulados
     const mockData = {
@@ -228,6 +268,11 @@ export default function ParentDashboardScreen({ navigation }) {
                     duration: 800,
                     useNativeDriver: true,
                 }),
+                Animated.timing(headerSlide, {
+                    toValue: 0,
+                    duration: 600,
+                    useNativeDriver: true,
+                }),
             ]).start();
         }, 1500);
     }, []);
@@ -295,15 +340,15 @@ export default function ParentDashboardScreen({ navigation }) {
         <View style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="#0f0820" />
 
-            {/* Background Gradient */}
+            {/* Background Gradient Melhorado */}
             <LinearGradient
-                colors={['#0f0820', '#1a0f3a', '#2d1554']}
+                colors={['#0f0820', '#1a0f3a', '#2d1554', '#1a0f3a']}
                 style={styles.gradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
             />
 
-            {/* Floating Shapes Fixas */}
+            {/* Floating Shapes Fixas Melhoradas */}
             {fixedShapes.map((shape) => (
                 <FloatingShape
                     key={shape.id}
@@ -312,28 +357,42 @@ export default function ParentDashboardScreen({ navigation }) {
                     initialX={shape.initialX}
                     initialY={shape.initialY}
                     animationDelay={shape.animationDelay}
+                    animationDuration={shape.animationDuration}
+                    opacity={shape.opacity}
                 />
             ))}
 
-            {/* Overlay escuro com blur para melhor contraste */}
-            <BlurView intensity={20} tint="dark" style={styles.overlayBlur} />
-            <View style={styles.overlayDark} />
+            {/* Overlay com gradiente para melhor contraste */}
+            <LinearGradient
+                colors={['rgba(15, 8, 32, 0.7)', 'rgba(26, 15, 58, 0.5)', 'transparent']}
+                style={styles.overlayGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+            />
 
             <ScrollView
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
             >
-                {/* Header */}
+                {/* Header Melhorado */}
                 <Animated.View
                     style={[
                         styles.headerCard,
                         {
-                            transform: [{ scale: cardScale }],
+                            transform: [
+                                { scale: cardScale },
+                                { translateY: headerSlide }
+                            ],
                             opacity: cardOpacity,
                         },
                     ]}
                 >
-                    <BlurView intensity={30} tint="dark" style={styles.blurView}>
+                    <LinearGradient
+                        colors={['rgba(107, 47, 160, 0.8)', 'rgba(74, 31, 122, 0.9)']}
+                        style={styles.headerGradient}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                    >
                         <View style={styles.headerContent}>
                             <View>
                                 <Text style={styles.welcomeText}>Olá, Pai/Mãe!</Text>
@@ -345,13 +404,20 @@ export default function ParentDashboardScreen({ navigation }) {
                                 style={styles.settingsButton}
                                 onPress={() => Alert.alert('Configurações', 'Abrindo configurações...')}
                             >
-                                <Text style={styles.settingsIcon}>⚙️</Text>
+                                <LinearGradient
+                                    colors={['#ffd700', '#f6ad55']}
+                                    style={styles.settingsGradient}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 1 }}
+                                >
+                                    <Text style={styles.settingsIcon}>⚙️</Text>
+                                </LinearGradient>
                             </TouchableOpacity>
                         </View>
-                    </BlurView>
+                    </LinearGradient>
                 </Animated.View>
 
-                {/* Período Selector */}
+                {/* Período Selector Melhorado */}
                 <Animated.View
                     style={[
                         styles.periodSelector,
@@ -361,7 +427,12 @@ export default function ParentDashboardScreen({ navigation }) {
                         },
                     ]}
                 >
-                    <BlurView intensity={25} tint="dark" style={styles.periodBlur}>
+                    <LinearGradient
+                        colors={['rgba(107, 47, 160, 0.6)', 'rgba(74, 31, 122, 0.7)']}
+                        style={styles.periodGradient}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                    >
                         <Text style={styles.periodTitle}>Período:</Text>
                         <View style={styles.periodButtons}>
                             {['week', 'month', 'total'].map((period) => (
@@ -373,16 +444,25 @@ export default function ParentDashboardScreen({ navigation }) {
                                     ]}
                                     onPress={() => setSelectedPeriod(period)}
                                 >
-                                    <Text style={[
-                                        styles.periodButtonText,
-                                        selectedPeriod === period && styles.periodButtonTextActive
-                                    ]}>
-                                        {period === 'week' ? 'Semana' : period === 'month' ? 'Mês' : 'Total'}
-                                    </Text>
+                                    <LinearGradient
+                                        colors={selectedPeriod === period ?
+                                            ['#ffd700', '#f6ad55'] :
+                                            ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
+                                        style={styles.periodButtonGradient}
+                                        start={{ x: 0, y: 0 }}
+                                        end={{ x: 1, y: 1 }}
+                                    >
+                                        <Text style={[
+                                            styles.periodButtonText,
+                                            selectedPeriod === period && styles.periodButtonTextActive
+                                        ]}>
+                                            {period === 'week' ? 'Semana' : period === 'month' ? 'Mês' : 'Total'}
+                                        </Text>
+                                    </LinearGradient>
                                 </TouchableOpacity>
                             ))}
                         </View>
-                    </BlurView>
+                    </LinearGradient>
                 </Animated.View>
 
                 {/* Métricas Principais */}
@@ -431,7 +511,12 @@ export default function ParentDashboardScreen({ navigation }) {
                         },
                     ]}
                 >
-                    <BlurView intensity={30} tint="dark" style={styles.blurView}>
+                    <LinearGradient
+                        colors={['rgba(107, 47, 160, 0.7)', 'rgba(74, 31, 122, 0.8)']}
+                        style={styles.chartGradient}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                    >
                         <Text style={styles.chartTitle}>Progresso Semanal (minutos)</Text>
                         <LineChart
                             data={{
@@ -448,7 +533,7 @@ export default function ParentDashboardScreen({ navigation }) {
                             bezier
                             style={styles.chart}
                         />
-                    </BlurView>
+                    </LinearGradient>
                 </Animated.View>
 
                 {/* Distribuição de Atividades */}
@@ -461,7 +546,12 @@ export default function ParentDashboardScreen({ navigation }) {
                         },
                     ]}
                 >
-                    <BlurView intensity={30} tint="dark" style={styles.blurView}>
+                    <LinearGradient
+                        colors={['rgba(107, 47, 160, 0.7)', 'rgba(74, 31, 122, 0.8)']}
+                        style={styles.chartGradient}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                    >
                         <Text style={styles.chartTitle}>Distribuição de Atividades</Text>
                         <BarChart
                             data={{
@@ -478,7 +568,7 @@ export default function ParentDashboardScreen({ navigation }) {
                             style={styles.chart}
                             showValuesOnTopOfBars
                         />
-                    </BlurView>
+                    </LinearGradient>
                 </Animated.View>
 
                 {/* Histórias Recomendadas */}
@@ -491,11 +581,23 @@ export default function ParentDashboardScreen({ navigation }) {
                         },
                     ]}
                 >
-                    <BlurView intensity={30} tint="dark" style={styles.blurView}>
+                    <LinearGradient
+                        colors={['rgba(107, 47, 160, 0.7)', 'rgba(74, 31, 122, 0.8)']}
+                        style={styles.storiesGradient}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                    >
                         <View style={styles.sectionHeader}>
                             <Text style={styles.sectionTitle}>Histórias para Ler Juntos</Text>
                             <TouchableOpacity onPress={() => Alert.alert('Histórias', 'Ver todas as histórias')}>
-                                <Text style={styles.viewAllText}>Ver todas</Text>
+                                <LinearGradient
+                                    colors={['#ffd700', '#f6ad55']}
+                                    style={styles.viewAllButton}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 0 }}
+                                >
+                                    <Text style={styles.viewAllText}>Ver todas</Text>
+                                </LinearGradient>
                             </TouchableOpacity>
                         </View>
 
@@ -515,7 +617,7 @@ export default function ParentDashboardScreen({ navigation }) {
                                 />
                             ))}
                         </ScrollView>
-                    </BlurView>
+                    </LinearGradient>
                 </Animated.View>
 
                 {/* Dicas para Pais */}
@@ -528,7 +630,12 @@ export default function ParentDashboardScreen({ navigation }) {
                         },
                     ]}
                 >
-                    <BlurView intensity={30} tint="dark" style={styles.blurView}>
+                    <LinearGradient
+                        colors={['rgba(107, 47, 160, 0.7)', 'rgba(74, 31, 122, 0.8)']}
+                        style={styles.tipsGradient}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                    >
                         <Text style={styles.tipsTitle}>💡 Dicas para Hoje</Text>
                         <View style={styles.tipsList}>
                             <Text style={styles.tipItem}>• Leia por 15 minutos com {childData?.childName}</Text>
@@ -536,7 +643,7 @@ export default function ParentDashboardScreen({ navigation }) {
                             <Text style={styles.tipItem}>• Explore uma nova categoria de histórias</Text>
                             <Text style={styles.tipItem}>• Celebre as conquistas da semana!</Text>
                         </View>
-                    </BlurView>
+                    </LinearGradient>
                 </Animated.View>
             </ScrollView>
         </View>
@@ -570,20 +677,12 @@ const styles = StyleSheet.create({
         top: 0,
         height: height,
     },
-    overlayBlur: {
+    overlayGradient: {
         position: 'absolute',
         left: 0,
         right: 0,
         top: 0,
-        height: height,
-    },
-    overlayDark: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        top: 0,
-        height: height,
-        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+        height: height * 0.7,
     },
     scrollContent: {
         flexGrow: 1,
@@ -595,15 +694,21 @@ const styles = StyleSheet.create({
         borderRadius: 999,
     },
     headerCard: {
-        borderRadius: 20,
+        borderRadius: 25,
         overflow: 'hidden',
         marginBottom: 20,
+        shadowColor: '#6b2fa0',
+        shadowOffset: {
+            width: 0,
+            height: 10,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 20,
+        elevation: 10,
     },
-    blurView: {
+    headerGradient: {
         padding: 25,
-        backgroundColor: 'rgba(19, 2, 35, 0.7)',
-        borderWidth: 1,
-        borderColor: 'rgba(107, 47, 160, 0.8)',
+        borderRadius: 25,
     },
     headerContent: {
         flexDirection: 'row',
@@ -611,7 +716,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     welcomeText: {
-        fontSize: 24,
+        fontSize: 26,
         fontWeight: 'bold',
         color: '#ffd700',
         marginBottom: 5,
@@ -620,33 +725,51 @@ const styles = StyleSheet.create({
         textShadowRadius: 3,
     },
     childInfo: {
-        color: 'rgba(255, 255, 255, 0.9)',
+        color: 'rgba(255, 255, 255, 0.95)',
         fontSize: 14,
+        textShadowColor: 'rgba(0, 0, 0, 0.3)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 2,
     },
     settingsButton: {
-        padding: 10,
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
         borderRadius: 20,
+        overflow: 'hidden',
+    },
+    settingsGradient: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     settingsIcon: {
         fontSize: 20,
     },
     periodSelector: {
-        borderRadius: 15,
+        borderRadius: 20,
         overflow: 'hidden',
         marginBottom: 20,
+        shadowColor: '#6b2fa0',
+        shadowOffset: {
+            width: 0,
+            height: 5,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 10,
+        elevation: 5,
     },
-    periodBlur: {
-        padding: 15,
-        backgroundColor: 'rgba(19, 2, 35, 0.6)',
-        borderWidth: 1,
-        borderColor: 'rgba(107, 47, 160, 0.6)',
+    periodGradient: {
+        padding: 20,
+        borderRadius: 20,
     },
     periodTitle: {
         color: '#ffd700',
         fontWeight: '600',
-        marginBottom: 10,
-        fontSize: 14,
+        marginBottom: 12,
+        fontSize: 16,
+        textShadowColor: 'rgba(255, 215, 0, 0.3)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 2,
     },
     periodButtons: {
         flexDirection: 'row',
@@ -654,25 +777,33 @@ const styles = StyleSheet.create({
     },
     periodButton: {
         flex: 1,
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderRadius: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
         marginHorizontal: 5,
+        borderRadius: 15,
+        overflow: 'hidden',
+    },
+    periodButtonGradient: {
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        borderRadius: 15,
         alignItems: 'center',
     },
     periodButtonActive: {
-        backgroundColor: 'rgba(255, 215, 0, 0.3)',
-        borderWidth: 1,
-        borderColor: 'rgba(255, 215, 0, 0.5)',
+        shadowColor: '#ffd700',
+        shadowOffset: {
+            width: 0,
+            height: 3,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 6,
     },
     periodButtonText: {
-        color: 'rgba(255, 255, 255, 0.8)',
+        color: 'rgba(255, 255, 255, 0.9)',
         fontSize: 12,
         fontWeight: '500',
     },
     periodButtonTextActive: {
-        color: '#ffd700',
+        color: '#2d1554',
         fontWeight: 'bold',
     },
     metricsGrid: {
@@ -684,12 +815,20 @@ const styles = StyleSheet.create({
     metricCard: {
         width: '48%',
         marginBottom: 15,
-        borderRadius: 15,
+        borderRadius: 20,
         overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 5,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 10,
+        elevation: 5,
     },
     metricGradient: {
-        padding: 15,
-        borderRadius: 15,
+        padding: 18,
+        borderRadius: 20,
     },
     metricContent: {
         flexDirection: 'row',
@@ -703,11 +842,11 @@ const styles = StyleSheet.create({
         color: 'rgba(255, 255, 255, 0.95)',
         fontSize: 12,
         marginBottom: 5,
-        fontWeight: '500',
+        fontWeight: '600',
     },
     metricValue: {
         color: '#fff',
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: 'bold',
         marginBottom: 2,
         textShadowColor: 'rgba(0, 0, 0, 0.3)',
@@ -715,28 +854,48 @@ const styles = StyleSheet.create({
         textShadowRadius: 2,
     },
     metricSubtitle: {
-        color: 'rgba(255, 255, 255, 0.8)',
+        color: 'rgba(255, 255, 255, 0.85)',
         fontSize: 10,
+        fontWeight: '500',
     },
     metricIcon: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        width: 45,
+        height: 45,
+        borderRadius: 22,
         justifyContent: 'center',
         alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+        elevation: 3,
     },
     metricIconText: {
-        fontSize: 18,
+        fontSize: 20,
     },
     chartCard: {
         borderRadius: 20,
         overflow: 'hidden',
         marginBottom: 20,
+        shadowColor: '#6b2fa0',
+        shadowOffset: {
+            width: 0,
+            height: 5,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        elevation: 5,
+    },
+    chartGradient: {
+        padding: 20,
+        borderRadius: 20,
     },
     chartTitle: {
         color: '#ffd700',
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: '600',
         marginBottom: 15,
         textAlign: 'center',
@@ -752,6 +911,18 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         overflow: 'hidden',
         marginBottom: 20,
+        shadowColor: '#6b2fa0',
+        shadowOffset: {
+            width: 0,
+            height: 5,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        elevation: 5,
+    },
+    storiesGradient: {
+        padding: 20,
+        borderRadius: 20,
     },
     sectionHeader: {
         flexDirection: 'row',
@@ -767,10 +938,15 @@ const styles = StyleSheet.create({
         textShadowOffset: { width: 1, height: 1 },
         textShadowRadius: 2,
     },
+    viewAllButton: {
+        paddingHorizontal: 15,
+        paddingVertical: 8,
+        borderRadius: 15,
+    },
     viewAllText: {
-        color: 'rgba(255, 215, 0, 0.9)',
-        fontSize: 14,
-        fontWeight: '500',
+        color: '#2d1554',
+        fontSize: 12,
+        fontWeight: 'bold',
     },
     storiesScroll: {
         marginHorizontal: -5,
@@ -778,14 +954,20 @@ const styles = StyleSheet.create({
     storyCard: {
         width: 280,
         marginHorizontal: 5,
-        borderRadius: 15,
+        borderRadius: 20,
         overflow: 'hidden',
+        shadowColor: '#6b2fa0',
+        shadowOffset: {
+            width: 0,
+            height: 5,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        elevation: 5,
     },
-    storyBlur: {
-        padding: 15,
-        backgroundColor: 'rgba(255, 255, 255, 0.15)',
-        borderWidth: 1,
-        borderColor: 'rgba(255, 215, 0, 0.4)',
+    storyGradient: {
+        padding: 18,
+        borderRadius: 20,
     },
     storyHeader: {
         flexDirection: 'row',
@@ -804,18 +986,20 @@ const styles = StyleSheet.create({
         textShadowRadius: 2,
     },
     storyCategory: {
-        backgroundColor: 'rgba(107, 47, 160, 0.4)',
+        backgroundColor: 'rgba(255, 215, 0, 0.2)',
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 10,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 215, 0, 0.3)',
     },
     storyCategoryText: {
-        color: '#fff',
+        color: '#ffd700',
         fontSize: 10,
-        fontWeight: '500',
+        fontWeight: '600',
     },
     storyAuthor: {
-        color: 'rgba(255, 255, 255, 0.8)',
+        color: 'rgba(255, 255, 255, 0.9)',
         fontSize: 12,
         marginBottom: 12,
     },
@@ -825,26 +1009,40 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     storyDuration: {
-        color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: 12,
-    },
-    readButton: {
-        backgroundColor: 'rgba(255, 215, 0, 0.3)',
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 15,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 215, 0, 0.5)',
-    },
-    readButtonText: {
-        color: '#ffd700',
+        color: 'rgba(255, 255, 255, 0.8)',
         fontSize: 12,
         fontWeight: '500',
+    },
+    readButton: {
+        borderRadius: 15,
+        overflow: 'hidden',
+    },
+    readButtonGradient: {
+        paddingHorizontal: 15,
+        paddingVertical: 8,
+        borderRadius: 15,
+    },
+    readButtonText: {
+        color: '#2d1554',
+        fontSize: 12,
+        fontWeight: 'bold',
     },
     tipsCard: {
         borderRadius: 20,
         overflow: 'hidden',
         marginBottom: 20,
+        shadowColor: '#6b2fa0',
+        shadowOffset: {
+            width: 0,
+            height: 5,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        elevation: 5,
+    },
+    tipsGradient: {
+        padding: 20,
+        borderRadius: 20,
     },
     tipsTitle: {
         color: '#ffd700',
@@ -863,5 +1061,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         marginBottom: 8,
         lineHeight: 20,
+        fontWeight: '500',
     },
 });
