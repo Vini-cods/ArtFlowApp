@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import SignupScreen from './screens/SignupScreen';
 import LoginScreen from './screens/LoginScreen';
 import ParentDashboardScreen from './screens/ParentDashboardScreen';
+import StoriesScreen from './screens/StoriesScreen';
 
 const Stack = createStackNavigator();
 
@@ -23,6 +24,7 @@ export default function App() {
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Signup" component={SignupScreen} />
         <Stack.Screen name="ParentDashboard" component={ParentDashboardScreen} />
+        <Stack.Screen name="Stories" component={StoriesScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
