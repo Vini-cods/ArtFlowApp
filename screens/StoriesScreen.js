@@ -57,12 +57,12 @@ const TopNavigation = ({ activeTab, onTabChange }) => {
     );
 };
 
-// Componente de Menu Inferior (corrigido)
+// Componente de Menu Inferior (atualizado com favoritos)
 const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
     const tabs = [
         { key: 'home', icon: 'home', label: 'Início' },
         { key: 'search', icon: 'search', label: 'Buscar' },
-        { key: 'library', icon: 'library', label: 'Biblioteca' },
+        { key: 'favorites', icon: 'heart', label: 'Favoritos' },
         { key: 'status', icon: 'stats-chart', label: 'Status' },
         { key: 'profile', icon: 'person', label: 'Perfil' }
     ];
@@ -76,7 +76,7 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
             navigation.navigate('Profile');
         } else if (tab.key === 'status') {
             navigation.navigate('Status');
-        } else if (tab.key === 'library') {
+        } else if (tab.key === 'favorites') {
             navigation.navigate('Library'); // ← CORREÇÃO AQUI
         }
         // Buscar já está na StoriesScreen, não faz nada
@@ -536,7 +536,7 @@ export default function StoriesScreen({ navigation, route }) {
                 <View style={styles.bottomSpacer} />
             </ScrollView>
 
-            {/* Menu Inferior (corrigido) */}
+            {/* Menu Inferior (atualizado com favoritos) */}
             <BottomTabBar
                 activeTab={activeBottomTab}
                 onTabChange={setActiveBottomTab}
