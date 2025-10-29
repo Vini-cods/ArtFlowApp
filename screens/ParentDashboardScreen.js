@@ -399,7 +399,7 @@ export default function ParentDashboardScreen({ navigation }) {
     };
 
     const handleProfilePress = () => {
-        Alert.alert('Perfil', 'Funcionalidade de perfil em desenvolvimento');
+        navigation.navigate('Profile');
     };
 
     const handleLibraryPress = () => {

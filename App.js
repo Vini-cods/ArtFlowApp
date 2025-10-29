@@ -10,6 +10,7 @@ import ParentDashboardScreen from './screens/ParentDashboardScreen';
 import StoriesScreen from './screens/StoriesScreen';
 import StatusScreen from './screens/StatusScreen';
 import LibraryScreen from './screens/LibraryScreen';
+import ProfileScreen from './screens/ProfileScreen';
 
 const Stack = createStackNavigator();
 
@@ -29,6 +30,7 @@ export default function App() {
         <Stack.Screen name="Stories" component={StoriesScreen} />
         <Stack.Screen name="Status" component={StatusScreen} />
         <Stack.Screen name="Library" component={LibraryScreen} />
+        <Stack.Screen name="Profile" component={ProfileScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
