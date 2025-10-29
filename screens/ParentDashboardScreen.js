@@ -157,7 +157,7 @@ const TopNavigation = ({ activeTab, onTabChange }) => {
     );
 };
 
-// Componente de Menu Inferior (atualizado com favoritos)
+// Componente de Menu Inferior (atualizado com perfil)
 const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
     const tabs = [
         { key: 'home', icon: 'home', label: 'Início' },
@@ -171,7 +171,7 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
         onTabChange(tab.key);
         // Navegação para as respectivas telas
         if (tab.key === 'profile') {
-            Alert.alert('Perfil', 'Funcionalidade de perfil em desenvolvimento');
+            navigation.navigate('Profile'); // ← ATUALIZADO
         } else if (tab.key === 'search') {
             navigation.navigate('Stories', {
                 searchQuery: '',
@@ -399,7 +399,7 @@ export default function ParentDashboardScreen({ navigation }) {
     };
 
     const handleProfilePress = () => {
-        navigation.navigate('Profile');
+        navigation.navigate('Profile'); // ← ATUALIZADO
     };
 
     const handleLibraryPress = () => {
@@ -445,7 +445,7 @@ export default function ParentDashboardScreen({ navigation }) {
                     </View>
                     <TouchableOpacity
                         style={styles.profileButton}
-                        onPress={handleProfilePress}
+                        onPress={handleProfilePress} // ← ATUALIZADO
                     >
                         <Ionicons name="person" size={24} color="#ffd700" />
                     </TouchableOpacity>

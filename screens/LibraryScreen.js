@@ -30,7 +30,7 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
         if (tab.key === 'home') {
             navigation.navigate('ParentDashboard');
         } else if (tab.key === 'profile') {
-            navigation.navigate('Profile');
+            navigation.navigate('Profile'); // ← ATUALIZADO
         } else if (tab.key === 'status') {
             navigation.navigate('Status');
         } else if (tab.key === 'search') {

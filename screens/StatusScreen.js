@@ -28,11 +28,11 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
         if (tab.key === 'home') {
             navigation.navigate('ParentDashboard');
         } else if (tab.key === 'profile') {
-            navigation.navigate('Profile');
+            navigation.navigate('Profile'); // ← ATUALIZADO
         } else if (tab.key === 'search') {
             navigation.navigate('Stories', { searchQuery: '', category: 'all' });
         } else if (tab.key === 'favorites') {
-            navigation.navigate('Library'); // ← CORREÇÃO AQUI
+            navigation.navigate('Library');
         }
     };
 
@@ -160,7 +160,10 @@ export default function StatusScreen({ navigation }) {
                         <Text style={styles.welcomeText}>Status do Desenvolvimento</Text>
                         <Text style={styles.subtitle}>Acompanhe o progresso do seu filho</Text>
                     </View>
-                    <TouchableOpacity style={styles.profileButton}>
+                    <TouchableOpacity
+                        style={styles.profileButton}
+                        onPress={() => navigation.navigate('Profile')} // ← ATUALIZADO
+                    >
                         <Ionicons name="person" size={24} color="#ffd700" />
                     </TouchableOpacity>
                 </View>

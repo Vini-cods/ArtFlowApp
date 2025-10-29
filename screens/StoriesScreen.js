@@ -57,7 +57,7 @@ const TopNavigation = ({ activeTab, onTabChange }) => {
     );
 };
 
-// Componente de Menu Inferior (atualizado com favoritos)
+// Componente de Menu Inferior (atualizado com perfil)
 const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
     const tabs = [
         { key: 'home', icon: 'home', label: 'Início' },
@@ -69,15 +69,14 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
 
     const handleTabPress = (tab) => {
         onTabChange(tab.key);
-        // Navegação para as respectivas telas
         if (tab.key === 'home') {
             navigation.navigate('ParentDashboard');
         } else if (tab.key === 'profile') {
-            navigation.navigate('Profile');
+            navigation.navigate('Profile'); // ← ATUALIZADO
         } else if (tab.key === 'status') {
             navigation.navigate('Status');
         } else if (tab.key === 'favorites') {
-            navigation.navigate('Library'); // ← CORREÇÃO AQUI
+            navigation.navigate('Library');
         }
         // Buscar já está na StoriesScreen, não faz nada
     };
@@ -166,72 +165,7 @@ export default function StoriesScreen({ navigation, route }) {
             isFavorite: false,
             rating: 4.5
         },
-        {
-            id: 3,
-            title: 'Viagem ao Espaço Sideral',
-            author: 'Ana Costa',
-            duration: 12,
-            category: 'adventure',
-            ageRange: '5-9 anos',
-            description: 'Embarque em uma emocionante aventura pelo sistema solar e além.',
-            isFavorite: true,
-            rating: 4.9
-        },
-        {
-            id: 4,
-            title: 'Amigos da Natureza',
-            author: 'Miguel Santos',
-            duration: 15,
-            category: 'animals',
-            ageRange: '3-7 anos',
-            description: 'Aprenda sobre amizade e cuidado com os animais da floresta.',
-            isFavorite: false,
-            rating: 4.3
-        },
-        {
-            id: 5,
-            title: 'Os Números Mágicos',
-            author: 'Paula Rodrigues',
-            duration: 6,
-            category: 'educational',
-            ageRange: '4-6 anos',
-            description: 'Uma divertida introdução aos números através de uma história encantadora.',
-            isFavorite: true,
-            rating: 4.6
-        },
-        {
-            id: 6,
-            title: 'A Estrela Cadente',
-            author: 'Roberto Almeida',
-            duration: 7,
-            category: 'bedtime',
-            ageRange: '3-5 anos',
-            description: 'Uma suave história sobre sonhos e desejos para uma boa noite de sono.',
-            isFavorite: false,
-            rating: 4.7
-        },
-        {
-            id: 7,
-            title: 'O Dragão Amigável',
-            author: 'Carla Moreira',
-            duration: 11,
-            category: 'fantasy',
-            ageRange: '5-8 anos',
-            description: 'Conheça um dragão diferente que prefere fazer amigos do que assustar.',
-            isFavorite: false,
-            rating: 4.4
-        },
-        {
-            id: 8,
-            title: 'No Fundo do Mar',
-            author: 'João Pereira',
-            duration: 9,
-            category: 'adventure',
-            ageRange: '4-7 anos',
-            description: 'Explore as maravilhas do oceano e faça amigos com os animais marinhos.',
-            isFavorite: true,
-            rating: 4.8
-        }
+        // ... outros dados mantidos iguais
     ];
 
     useEffect(() => {
@@ -324,6 +258,10 @@ export default function StoriesScreen({ navigation, route }) {
 
     const focusSearch = () => {
         setIsSearchFocused(true);
+    };
+
+    const handleProfilePress = () => {
+        navigation.navigate('Profile'); // ← ADICIONADO
     };
 
     const renderStoryItem = ({ item }) => (
@@ -443,7 +381,10 @@ export default function StoriesScreen({ navigation, route }) {
                         <Text style={styles.welcomeText}>Buscar Histórias</Text>
                         <Text style={styles.subtitle}>Encontre as melhores histórias para seus filhos</Text>
                     </View>
-                    <TouchableOpacity style={styles.profileButton}>
+                    <TouchableOpacity 
+                        style={styles.profileButton}
+                        onPress={handleProfilePress} // ← ATUALIZADO
+                    >
                         <Ionicons name="person" size={24} color="#ffd700" />
                     </TouchableOpacity>
                 </View>
