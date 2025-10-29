@@ -10,7 +10,8 @@ import {
     ActivityIndicator,
     StatusBar,
     FlatList,
-    TextInput
+    TextInput,
+    Alert
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -156,12 +157,13 @@ const TopNavigation = ({ activeTab, onTabChange }) => {
     );
 };
 
-// Componente de Menu Inferior (footer completo)
+// Componente de Menu Inferior (atualizado com favoritos)
 const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
     const tabs = [
         { key: 'home', icon: 'home', label: 'Início' },
         { key: 'search', icon: 'search', label: 'Buscar' },
-        { key: 'library', icon: 'library', label: 'Biblioteca' },
+        { key: 'favorites', icon: 'heart', label: 'Favoritos' },
+        { key: 'status', icon: 'stats-chart', label: 'Status' },
         { key: 'profile', icon: 'person', label: 'Perfil' }
     ];
 
@@ -169,11 +171,17 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
         onTabChange(tab.key);
         // Navegação para as respectivas telas
         if (tab.key === 'profile') {
-            navigation.navigate('Profile');
+            Alert.alert('Perfil', 'Funcionalidade de perfil em desenvolvimento');
         } else if (tab.key === 'search') {
-            navigation.navigate('Stories', { searchQuery: '', category: 'all' });
-        } else if (tab.key === 'library') {
-            navigation.navigate('Stories', { searchQuery: '', category: 'all' });
+            navigation.navigate('Stories', {
+                searchQuery: '',
+                category: 'all',
+                fromSearch: true
+            });
+        } else if (tab.key === 'favorites') {
+            navigation.navigate('Library');
+        } else if (tab.key === 'status') {
+            navigation.navigate('Status');
         }
     };
 
@@ -240,36 +248,50 @@ const mockBooks = {
             author: 'Autor Desconhecido',
             type: 'book',
             duration: 12
+        },
+        {
+            id: 4,
+            title: 'Aventura Espacial',
+            author: 'Carlos Silva',
+            type: 'book',
+            duration: 15
         }
     ],
     ebooks: [
         {
-            id: 4,
+            id: 5,
             title: 'Kiera and the Sun',
             author: 'Autor Desconhecido',
             type: 'eBook',
             duration: 15
         },
         {
-            id: 5,
+            id: 6,
             title: 'Dilist and Fury',
             author: 'Autor Desconhecido',
             type: 'eBook',
             duration: 10
         },
         {
-            id: 6,
-            title: 'Aventura Espacial',
-            author: 'Carlos Silva',
+            id: 7,
+            title: 'O Pequeno Príncipe',
+            author: 'Antoine de Saint-Exupéry',
             type: 'eBook',
             duration: 12
+        },
+        {
+            id: 8,
+            title: 'As Crônicas de Nárnia',
+            author: 'C.S. Lewis',
+            type: 'eBook',
+            duration: 18
         }
     ]
 };
 
 export default function ParentDashboardScreen({ navigation }) {
     const [loading, setLoading] = useState(true);
-    const [activeTopTab, setActiveTopTab] = useState('all');
+    const [activeTopTab, setActiveTopTab] = useState('todos');
     const [activeBottomTab, setActiveBottomTab] = useState('home');
     const [searchQuery, setSearchQuery] = useState('');
     const [booksData, setBooksData] = useState(mockBooks);
@@ -307,8 +329,20 @@ export default function ParentDashboardScreen({ navigation }) {
     }, []);
 
     const handleBookPress = (book) => {
-        // Navegar para a tela de detalhes do livro
-        navigation.navigate('BookDetails', { book });
+        Alert.alert(
+            'Iniciar Leitura',
+            `Deseja ler "${book.title}"?`,
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Começar',
+                    onPress: () => {
+                        Alert.alert('Sucesso', `Iniciando leitura de "${book.title}"!`);
+                        // Aqui você pode navegar para a tela de leitura
+                    }
+                }
+            ]
+        );
     };
 
     const handleSearch = () => {
@@ -316,7 +350,14 @@ export default function ParentDashboardScreen({ navigation }) {
         if (searchQuery.trim() !== '') {
             navigation.navigate('Stories', {
                 searchQuery: searchQuery,
-                category: 'all'
+                category: 'all',
+                fromSearch: true
+            });
+        } else {
+            navigation.navigate('Stories', {
+                searchQuery: '',
+                category: 'all',
+                fromSearch: true
             });
         }
     };
@@ -326,7 +367,8 @@ export default function ParentDashboardScreen({ navigation }) {
             case 'Explorar':
                 navigation.navigate('Stories', {
                     searchQuery: '',
-                    category: 'all'
+                    category: 'all',
+                    fromSearch: true
                 });
                 break;
             case 'Ler Agora':
@@ -335,7 +377,7 @@ export default function ParentDashboardScreen({ navigation }) {
                 }
                 break;
             case 'Ver Progresso':
-                navigation.navigate('Progress');
+                navigation.navigate('Status');
                 break;
             default:
                 break;
@@ -354,6 +396,14 @@ export default function ParentDashboardScreen({ navigation }) {
             searchQuery: '',
             category: 'all'
         });
+    };
+
+    const handleProfilePress = () => {
+        Alert.alert('Perfil', 'Funcionalidade de perfil em desenvolvimento');
+    };
+
+    const handleLibraryPress = () => {
+        navigation.navigate('Library');
     };
 
     if (loading) {
@@ -393,7 +443,10 @@ export default function ParentDashboardScreen({ navigation }) {
                         <Text style={styles.welcomeText}>Olá, Pais! </Text>
                         <Text style={styles.subtitle}>Bem-vindo ao ArtFlow</Text>
                     </View>
-                    <TouchableOpacity style={styles.profileButton}>
+                    <TouchableOpacity
+                        style={styles.profileButton}
+                        onPress={handleProfilePress}
+                    >
                         <Ionicons name="person" size={24} color="#ffd700" />
                     </TouchableOpacity>
                 </View>
@@ -433,7 +486,7 @@ export default function ParentDashboardScreen({ navigation }) {
                 {/* Seção Popular */}
                 <View style={styles.section}>
                     <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>Popular</Text>
+                        <Text style={styles.sectionTitle}> Popular</Text>
                         <TouchableOpacity onPress={handleSeeAllStories}>
                             <Text style={styles.seeAllText}>Ver Todos</Text>
                         </TouchableOpacity>
@@ -458,7 +511,7 @@ export default function ParentDashboardScreen({ navigation }) {
                 {/* Seção eBooks */}
                 <View style={styles.section}>
                     <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>eBooks</Text>
+                        <Text style={styles.sectionTitle}> eBooks</Text>
                         <TouchableOpacity onPress={() => handleCategoryPress('ebooks')}>
                             <Text style={styles.seeAllText}>Ver Todos</Text>
                         </TouchableOpacity>
@@ -482,7 +535,7 @@ export default function ParentDashboardScreen({ navigation }) {
 
                 {/* Categorias Rápidas */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>    Procurar Categorias</Text>
+                    <Text style={styles.sectionTitle}> Procurar Categorias</Text>
                     <View style={styles.categoriesGrid}>
                         <TouchableOpacity
                             style={styles.categoryButton}
@@ -538,11 +591,78 @@ export default function ParentDashboardScreen({ navigation }) {
                     </View>
                 </View>
 
+                {/* Seção de Recomendações */}
+                <View style={styles.section}>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}> Recomendados para Hoje</Text>
+                        <TouchableOpacity onPress={handleSeeAllStories}>
+                            <Text style={styles.seeAllText}>Ver Mais</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.recommendationContainer}>
+                        <TouchableOpacity
+                            style={styles.recommendationCard}
+                            onPress={() => handleBookPress(booksData.popular[0])}
+                        >
+                            <LinearGradient
+                                colors={['#8a4cbf', '#6b2fa0']}
+                                style={styles.recommendationGradient}
+                            >
+                                <View style={styles.recommendationContent}>
+                                    <View style={styles.recommendationIcon}>
+                                        <Ionicons name="star" size={30} color="#ffd700" />
+                                    </View>
+                                    <View style={styles.recommendationText}>
+                                        <Text style={styles.recommendationTitle}>
+                                            {booksData.popular[0]?.title}
+                                        </Text>
+                                        <Text style={styles.recommendationAuthor}>
+                                            Por {booksData.popular[0]?.author}
+                                        </Text>
+                                        <Text style={styles.recommendationDuration}>
+                                            {booksData.popular[0]?.duration} min de leitura
+                                        </Text>
+                                    </View>
+                                </View>
+                            </LinearGradient>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                {/* Seção Minha Biblioteca */}
+                <View style={styles.section}>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}> Meus Favoritos</Text>
+                        <TouchableOpacity onPress={handleLibraryPress}>
+                            <Text style={styles.seeAllText}>Ver Favoritos</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.libraryPreview}>
+                        <TouchableOpacity
+                            style={styles.libraryCard}
+                            onPress={handleLibraryPress}
+                        >
+                            <LinearGradient
+                                colors={['#ff6b6b', '#ff9e7d']}
+                                style={styles.libraryGradient}
+                            >
+                                <View style={styles.libraryContent}>
+                                    <Ionicons name="heart" size={40} color="#fff" />
+                                    <Text style={styles.libraryText}>Acesse seus favoritos</Text>
+                                    <Text style={styles.librarySubtext}>
+                                        Veja seus livros favoritos e progresso de leitura
+                                    </Text>
+                                </View>
+                            </LinearGradient>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
                 {/* Espaço para o menu inferior */}
                 <View style={styles.bottomSpacer} />
             </ScrollView>
 
-            {/* Menu Inferior (Footer completo) */}
+            {/* Menu Inferior (atualizado com favoritos) */}
             <BottomTabBar
                 activeTab={activeBottomTab}
                 onTabChange={setActiveBottomTab}
@@ -830,6 +950,78 @@ const styles = StyleSheet.create({
         marginTop: 8,
         textAlign: 'center',
     },
+    // Recomendações
+    recommendationContainer: {
+        paddingHorizontal: 20,
+    },
+    recommendationCard: {
+        borderRadius: 20,
+        overflow: 'hidden',
+        marginBottom: 10,
+    },
+    recommendationGradient: {
+        padding: 20,
+    },
+    recommendationContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    recommendationIcon: {
+        width: 60,
+        height: 60,
+        borderRadius: 15,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 15,
+    },
+    recommendationText: {
+        flex: 1,
+    },
+    recommendationTitle: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 5,
+    },
+    recommendationAuthor: {
+        color: 'rgba(255, 255, 255, 0.8)',
+        fontSize: 14,
+        marginBottom: 5,
+    },
+    recommendationDuration: {
+        color: '#ffd700',
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    // Biblioteca Preview
+    libraryPreview: {
+        paddingHorizontal: 20,
+    },
+    libraryCard: {
+        borderRadius: 20,
+        overflow: 'hidden',
+        marginBottom: 10,
+    },
+    libraryGradient: {
+        padding: 25,
+    },
+    libraryContent: {
+        alignItems: 'center',
+    },
+    libraryText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginTop: 15,
+        marginBottom: 8,
+        textAlign: 'center',
+    },
+    librarySubtext: {
+        color: 'rgba(255, 255, 255, 0.8)',
+        fontSize: 14,
+        textAlign: 'center',
+    },
     bottomSpacer: {
         height: 30,
     },
@@ -857,9 +1049,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         flex: 1,
-    },
-    bottomTabItemActive: {
-        // Estilo para item ativo
     },
     tabIconContainer: {
         width: 40,

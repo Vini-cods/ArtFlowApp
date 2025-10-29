@@ -57,12 +57,13 @@ const TopNavigation = ({ activeTab, onTabChange }) => {
     );
 };
 
-// Componente de Menu Inferior (igual ao ParentDashboard)
+// Componente de Menu Inferior (corrigido)
 const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
     const tabs = [
         { key: 'home', icon: 'home', label: 'Início' },
         { key: 'search', icon: 'search', label: 'Buscar' },
         { key: 'library', icon: 'library', label: 'Biblioteca' },
+        { key: 'status', icon: 'stats-chart', label: 'Status' },
         { key: 'profile', icon: 'person', label: 'Perfil' }
     ];
 
@@ -73,9 +74,12 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
             navigation.navigate('ParentDashboard');
         } else if (tab.key === 'profile') {
             navigation.navigate('Profile');
-        } else if (tab.key === 'search') {
-            // Já está na tela de busca, não faz nada ou pode focar na busca
+        } else if (tab.key === 'status') {
+            navigation.navigate('Status');
+        } else if (tab.key === 'library') {
+            navigation.navigate('Library'); // ← CORREÇÃO AQUI
         }
+        // Buscar já está na StoriesScreen, não faz nada
     };
 
     return (
@@ -124,8 +128,9 @@ export default function StoriesScreen({ navigation, route }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [activeTopTab, setActiveTopTab] = useState('all');
-    const [activeBottomTab, setActiveBottomTab] = useState('search');
+    const [activeBottomTab, setActiveBottomTab] = useState('search'); // Agora padrão é 'search'
     const [loading, setLoading] = useState(true);
+    const [isSearchFocused, setIsSearchFocused] = useState(false);
 
     // Categorias disponíveis (para filtro interno)
     const categories = [
@@ -239,6 +244,11 @@ export default function StoriesScreen({ navigation, route }) {
             setSelectedCategory(route.params.category);
         }
 
+        // Focar na busca se veio da navegação de busca
+        if (route.params?.fromSearch) {
+            setIsSearchFocused(true);
+        }
+
         // Simular carregamento de dados
         setTimeout(() => {
             setStories(mockStories);
@@ -304,6 +314,16 @@ export default function StoriesScreen({ navigation, route }) {
         if (route.params) {
             navigation.setParams({ searchQuery: '', category: 'all' });
         }
+    };
+
+    const handleSearch = () => {
+        if (searchQuery.trim() !== '') {
+            filterStories();
+        }
+    };
+
+    const focusSearch = () => {
+        setIsSearchFocused(true);
     };
 
     const renderStoryItem = ({ item }) => (
@@ -417,27 +437,41 @@ export default function StoriesScreen({ navigation, route }) {
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
             >
-                {/* Header (igual ao ParentDashboard) */}
+                {/* Header */}
                 <View style={styles.header}>
                     <View>
-                        <Text style={styles.welcomeText}>Olá, Pais!</Text>
-                        <Text style={styles.subtitle}>Procure pelos Melhores Livros</Text>
+                        <Text style={styles.welcomeText}>Buscar Histórias</Text>
+                        <Text style={styles.subtitle}>Encontre as melhores histórias para seus filhos</Text>
                     </View>
                     <TouchableOpacity style={styles.profileButton}>
                         <Ionicons name="person" size={24} color="#ffd700" />
                     </TouchableOpacity>
                 </View>
 
-                {/* Barra de Pesquisa (igual ao ParentDashboard) */}
+                {/* Barra de Pesquisa com foco automático */}
                 <View style={styles.searchContainer}>
-                    <View style={styles.searchBar}>
-                        <Ionicons name="search" size={20} color="rgba(255, 255, 255, 0.6)" />
+                    <View style={[
+                        styles.searchBar,
+                        isSearchFocused && styles.searchBarFocused
+                    ]}>
+                        <TouchableOpacity onPress={handleSearch}>
+                            <Ionicons
+                                name="search"
+                                size={20}
+                                color={isSearchFocused ? '#ffd700' : 'rgba(255, 255, 255, 0.6)'}
+                            />
+                        </TouchableOpacity>
                         <TextInput
                             style={styles.searchInput}
                             placeholder="Procure por Livros..."
                             placeholderTextColor="rgba(255, 255, 255, 0.6)"
                             value={searchQuery}
                             onChangeText={setSearchQuery}
+                            onSubmitEditing={handleSearch}
+                            onFocus={focusSearch}
+                            onBlur={() => setIsSearchFocused(false)}
+                            autoFocus={route.params?.fromSearch}
+                            returnKeyType="search"
                         />
                         {searchQuery !== '' && (
                             <TouchableOpacity onPress={clearSearch}>
@@ -447,7 +481,7 @@ export default function StoriesScreen({ navigation, route }) {
                     </View>
                 </View>
 
-                {/* Navegação Superior (igual ao ParentDashboard) */}
+                {/* Navegação Superior */}
                 <TopNavigation activeTab={activeTopTab} onTabChange={setActiveTopTab} />
 
                 {/* Categorias (filtro interno) */}
@@ -484,20 +518,25 @@ export default function StoriesScreen({ navigation, route }) {
                         />
                     ) : (
                         <View style={styles.emptyState}>
-                            <Ionicons name="book" size={60} color="rgba(255, 255, 255, 0.3)" />
-                            <Text style={styles.emptyStateTitle}>Nenhuma história encontrada</Text>
+                            <Ionicons name="search" size={60} color="rgba(255, 255, 255, 0.3)" />
+                            <Text style={styles.emptyStateTitle}>
+                                {searchQuery ? 'Nenhum resultado encontrado' : 'Explore nossas histórias'}
+                            </Text>
                             <Text style={styles.emptyStateText}>
-                                {searchQuery || selectedCategory !== 'all'
+                                {searchQuery
                                     ? 'Tente ajustar sua busca ou selecionar outra categoria'
-                                    : 'Não há histórias disponíveis no momento'
+                                    : 'Use a barra de pesquisa acima para encontrar histórias incríveis'
                                 }
                             </Text>
                         </View>
                     )}
                 </View>
+
+                {/* Espaço para o footer */}
+                <View style={styles.bottomSpacer} />
             </ScrollView>
 
-            {/* Menu Inferior (igual ao ParentDashboard) */}
+            {/* Menu Inferior (corrigido) */}
             <BottomTabBar
                 activeTab={activeBottomTab}
                 onTabChange={setActiveBottomTab}
@@ -530,7 +569,7 @@ const styles = StyleSheet.create({
         top: 0,
         height: height,
     },
-    // Header (igual ao ParentDashboard)
+    // Header
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -554,7 +593,7 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
     },
-    // Barra de Pesquisa (igual ao ParentDashboard)
+    // Barra de Pesquisa
     searchContainer: {
         paddingHorizontal: 20,
         marginBottom: 20,
@@ -569,6 +608,10 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: 'rgba(255, 215, 0, 0.2)',
     },
+    searchBarFocused: {
+        borderColor: '#ffd700',
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    },
     searchInput: {
         flex: 1,
         color: '#fff',
@@ -576,7 +619,7 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         marginRight: 10,
     },
-    // Navegação Superior (igual ao ParentDashboard)
+    // Navegação Superior
     topNavigation: {
         marginBottom: 20,
         borderBottomWidth: 1,
@@ -787,7 +830,10 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         lineHeight: 22,
     },
-    // Menu Inferior (igual ao ParentDashboard)
+    bottomSpacer: {
+        height: 30,
+    },
+    // Menu Inferior
     bottomTabBar: {
         position: 'absolute',
         bottom: 0,
@@ -811,9 +857,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         flex: 1,
-    },
-    bottomTabItemActive: {
-        // Estilo para item ativo
     },
     tabIconContainer: {
         width: 40,

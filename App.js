@@ -8,6 +8,8 @@ import SignupScreen from './screens/SignupScreen';
 import LoginScreen from './screens/LoginScreen';
 import ParentDashboardScreen from './screens/ParentDashboardScreen';
 import StoriesScreen from './screens/StoriesScreen';
+import StatusScreen from './screens/StatusScreen';
+import LibraryScreen from './screens/LibraryScreen';
 
 const Stack = createStackNavigator();
 
@@ -25,6 +27,8 @@ export default function App() {
         <Stack.Screen name="Signup" component={SignupScreen} />
         <Stack.Screen name="ParentDashboard" component={ParentDashboardScreen} />
         <Stack.Screen name="Stories" component={StoriesScreen} />
+        <Stack.Screen name="Status" component={StatusScreen} />
+        <Stack.Screen name="Library" component={LibraryScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
