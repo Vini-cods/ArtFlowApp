@@ -8,110 +8,37 @@ import {
     Dimensions,
     ScrollView,
     ActivityIndicator,
-    Alert,
     StatusBar,
-    FlatList
+    FlatList,
+    TextInput
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 
-// Componente de Card para Histórias
-const StoryCard = ({ title, author, image, duration, onPress }) => (
-    <TouchableOpacity style={styles.storyCard} onPress={onPress}>
-        <View style={styles.storyImageContainer}>
-            <View style={styles.storyImagePlaceholder}>
+// Componente de Card para Livros
+const BookCard = ({ title, author, image, type, onPress }) => (
+    <TouchableOpacity style={styles.bookCard} onPress={onPress}>
+        <View style={styles.bookImageContainer}>
+            <View style={styles.bookImagePlaceholder}>
                 <Ionicons name="book" size={40} color="#ffd700" />
             </View>
-            <View style={styles.storyDuration}>
-                <Text style={styles.durationText}>⏱️ {duration}m</Text>
-            </View>
+            {type === 'eBook' && (
+                <View style={styles.ebookBadge}>
+                    <Text style={styles.ebookText}>eBook</Text>
+                </View>
+            )}
         </View>
-        <View style={styles.storyInfo}>
-            <Text style={styles.storyTitle} numberOfLines={2}>{title}</Text>
-            <Text style={styles.storyAuthor}>Por {author}</Text>
+        <View style={styles.bookInfo}>
+            <Text style={styles.bookTitle} numberOfLines={2}>{title}</Text>
+            <Text style={styles.bookAuthor}>Por {author}</Text>
         </View>
     </TouchableOpacity>
 );
 
-// Componente de Métrica de Progresso
-const ProgressMetric = ({ title, value, subtitle, icon, color }) => (
-    <View style={styles.metricCard}>
-        <LinearGradient
-            colors={color}
-            style={styles.metricGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-        >
-            <View style={styles.metricContent}>
-                <View style={styles.metricText}>
-                    <Text style={styles.metricTitle}>{title}</Text>
-                    <Text style={styles.metricValue}>{value}</Text>
-                    <Text style={styles.metricSubtitle}>{subtitle}</Text>
-                </View>
-                <View style={styles.metricIcon}>
-                    <Ionicons name={icon} size={24} color="#fff" />
-                </View>
-            </View>
-        </LinearGradient>
-    </View>
-);
-
-// Componente de Menu Inferior
-const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
-    const tabs = [
-        { key: 'home', icon: 'home', label: 'Início', screen: 'ParentDashboard' },
-        { key: 'stories', icon: 'book', label: 'Histórias', screen: 'Stories' },
-        { key: 'progress', icon: 'bar-chart', label: 'Progresso', screen: 'Progress' },
-        { key: 'achievements', icon: 'trophy', label: 'Conquistas', screen: 'Achievements' },
-        { key: 'profile', icon: 'person', label: 'Perfil', screen: 'Profile' }
-    ];
-
-    const handleTabPress = (tab) => {
-        onTabChange(tab.key);
-        if (tab.screen !== 'ParentDashboard') {
-            navigation.navigate(tab.screen);
-        }
-    };
-
-    return (
-        <View style={styles.bottomTabBar}>
-            <LinearGradient
-                colors={['rgba(26, 15, 58, 0.95)', 'rgba(45, 21, 84, 0.95)']}
-                style={styles.tabBarGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-            >
-                {tabs.map((tab) => (
-                    <TouchableOpacity
-                        key={tab.key}
-                        style={[
-                            styles.tabItem,
-                            activeTab === tab.key && styles.tabItemActive
-                        ]}
-                        onPress={() => handleTabPress(tab)}
-                    >
-                        <Ionicons
-                            name={tab.icon}
-                            size={24}
-                            color={activeTab === tab.key ? '#ffd700' : 'rgba(255, 255, 255, 0.6)'}
-                        />
-                        <Text style={[
-                            styles.tabLabel,
-                            activeTab === tab.key && styles.tabLabelActive
-                        ]}>
-                            {tab.label}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-            </LinearGradient>
-        </View>
-    );
-};
-
 // Componente do Carrossel
-const ImageCarousel = ({ data }) => {
+const ImageCarousel = ({ data, onButtonPress }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const scrollX = useRef(new Animated.Value(0)).current;
     const flatListRef = useRef();
@@ -142,7 +69,10 @@ const ImageCarousel = ({ data }) => {
                 <View style={styles.carouselContent}>
                     <Text style={styles.carouselTitle}>{item.title}</Text>
                     <Text style={styles.carouselDescription}>{item.description}</Text>
-                    <TouchableOpacity style={styles.carouselButton}>
+                    <TouchableOpacity
+                        style={styles.carouselButton}
+                        onPress={() => onButtonPress(item.buttonText)}
+                    >
                         <Text style={styles.carouselButtonText}>{item.buttonText}</Text>
                     </TouchableOpacity>
                 </View>
@@ -166,7 +96,7 @@ const ImageCarousel = ({ data }) => {
                 onScroll={onScroll}
                 scrollEventThrottle={16}
                 onMomentumScrollEnd={(event) => {
-                    const newIndex = Math.round(event.nativeEvent.contentOffset.x / width);
+                    const newIndex = Math.round(event.nativeEvent.contentOffset.x / (width - 40));
                     setCurrentIndex(newIndex);
                 }}
             />
@@ -185,29 +115,164 @@ const ImageCarousel = ({ data }) => {
     );
 };
 
-// Dados padrão para evitar erros
-const defaultData = {
-    childName: "Maria",
-    age: 7,
-    progress: {
-        readingTime: "0 min",
-        storiesRead: "0",
-        weeklyGoal: "0/7 dias",
-        favoriteCategory: "Aventura"
-    },
-    featuredStories: [],
-    readingTips: [
-        "Leia com entonação para tornar a história mais envolvente",
-        "Faça perguntas sobre a história para desenvolver a compreensão",
-        "Escolha histórias que despertem o interesse da criança",
-        "Estabeleça uma rotina diária de leitura"
+// Componente de Menu Superior (igual à imagem)
+const TopNavigation = ({ activeTab, onTabChange }) => {
+    const tabs = [
+        { key: 'todos', label: 'Todos' },
+        { key: 'ebooks', label: 'eBooks' },
+        { key: 'notícias', label: 'Notícias' },
+        { key: 'ficção', label: 'Ficção' },
+        { key: 'gerenciar', label: 'Gerenciar' },
+        { key: 'fortress', label: 'Fortress' }
+    ];
+
+    return (
+        <View style={styles.topNavigation}>
+            <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.navScrollContent}
+            >
+                {tabs.map((tab) => (
+                    <TouchableOpacity
+                        key={tab.key}
+                        style={[
+                            styles.navItem,
+                            activeTab === tab.key && styles.navItemActive
+                        ]}
+                        onPress={() => onTabChange(tab.key)}
+                    >
+                        <Text style={[
+                            styles.navLabel,
+                            activeTab === tab.key && styles.navLabelActive
+                        ]}>
+                            {tab.label}
+                        </Text>
+                        {activeTab === tab.key && <View style={styles.activeIndicator} />}
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
+        </View>
+    );
+};
+
+// Componente de Menu Inferior (footer completo)
+const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
+    const tabs = [
+        { key: 'home', icon: 'home', label: 'Início' },
+        { key: 'search', icon: 'search', label: 'Buscar' },
+        { key: 'library', icon: 'library', label: 'Biblioteca' },
+        { key: 'profile', icon: 'person', label: 'Perfil' }
+    ];
+
+    const handleTabPress = (tab) => {
+        onTabChange(tab.key);
+        // Navegação para as respectivas telas
+        if (tab.key === 'profile') {
+            navigation.navigate('Profile');
+        } else if (tab.key === 'search') {
+            navigation.navigate('Stories', { searchQuery: '', category: 'all' });
+        } else if (tab.key === 'library') {
+            navigation.navigate('Stories', { searchQuery: '', category: 'all' });
+        }
+    };
+
+    return (
+        <View style={styles.bottomTabBar}>
+            <LinearGradient
+                colors={['rgba(26, 15, 58, 0.98)', 'rgba(45, 21, 84, 0.98)']}
+                style={styles.tabBarGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+            >
+                {tabs.map((tab) => (
+                    <TouchableOpacity
+                        key={tab.key}
+                        style={[
+                            styles.bottomTabItem,
+                            activeTab === tab.key && styles.bottomTabItemActive
+                        ]}
+                        onPress={() => handleTabPress(tab)}
+                    >
+                        <View style={[
+                            styles.tabIconContainer,
+                            activeTab === tab.key && styles.tabIconContainerActive
+                        ]}>
+                            <Ionicons
+                                name={tab.icon}
+                                size={24}
+                                color={activeTab === tab.key ? '#ffd700' : 'rgba(255, 255, 255, 0.7)'}
+                            />
+                        </View>
+                        <Text style={[
+                            styles.bottomTabLabel,
+                            activeTab === tab.key && styles.bottomTabLabelActive
+                        ]}>
+                            {tab.label}
+                        </Text>
+                    </TouchableOpacity>
+                ))}
+            </LinearGradient>
+        </View>
+    );
+};
+
+// Dados simulados baseados na imagem
+const mockBooks = {
+    popular: [
+        {
+            id: 1,
+            title: 'Her Radiant Curse',
+            author: 'Elizabeth Van',
+            type: 'book',
+            duration: 8
+        },
+        {
+            id: 2,
+            title: 'Prindgesso',
+            author: 'Quart milk',
+            type: 'book',
+            duration: 10
+        },
+        {
+            id: 3,
+            title: 'HIP RODANT CUGE',
+            author: 'Autor Desconhecido',
+            type: 'book',
+            duration: 12
+        }
+    ],
+    ebooks: [
+        {
+            id: 4,
+            title: 'Kiera and the Sun',
+            author: 'Autor Desconhecido',
+            type: 'eBook',
+            duration: 15
+        },
+        {
+            id: 5,
+            title: 'Dilist and Fury',
+            author: 'Autor Desconhecido',
+            type: 'eBook',
+            duration: 10
+        },
+        {
+            id: 6,
+            title: 'Aventura Espacial',
+            author: 'Carlos Silva',
+            type: 'eBook',
+            duration: 12
+        }
     ]
 };
 
 export default function ParentDashboardScreen({ navigation }) {
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('home');
-    const [childData, setChildData] = useState(defaultData);
+    const [activeTopTab, setActiveTopTab] = useState('all');
+    const [activeBottomTab, setActiveBottomTab] = useState('home');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [booksData, setBooksData] = useState(mockBooks);
 
     // Dados do carrossel
     const carouselData = [
@@ -234,90 +299,39 @@ export default function ParentDashboardScreen({ navigation }) {
         }
     ];
 
-    // Dados simulados
-    const mockData = {
-        childName: "Maria",
-        age: 7,
-        progress: {
-            readingTime: "45 min",
-            storiesRead: "12",
-            weeklyGoal: "5/7 dias",
-            favoriteCategory: "Aventura"
-        },
-        featuredStories: [
-            {
-                id: 1,
-                title: "Aventura na Floresta Encantada",
-                author: "Sofia Mendes",
-                duration: 8,
-                category: "Aventura"
-            },
-            {
-                id: 2,
-                title: "O Mistério do Castelo",
-                author: "Carlos Silva",
-                duration: 10,
-                category: "Mistério"
-            },
-            {
-                id: 3,
-                title: "Viagem ao Espaço",
-                author: "Ana Costa",
-                duration: 12,
-                category: "Ficção"
-            },
-            {
-                id: 4,
-                title: "Amigos da Natureza",
-                author: "Miguel Santos",
-                duration: 15,
-                category: "Aventura"
-            }
-        ],
-        readingTips: [
-            "Leia com entonação para tornar a história mais envolvente",
-            "Faça perguntas sobre a história para desenvolver a compreensão",
-            "Escolha histórias que despertem o interesse da criança",
-            "Estabeleça uma rotina diária de leitura"
-        ]
-    };
-
     useEffect(() => {
         // Simular carregamento de dados
         setTimeout(() => {
-            setChildData(mockData);
             setLoading(false);
         }, 1000);
     }, []);
 
-    const handleReadStory = (story) => {
-        Alert.alert(
-            'Ler História',
-            `Deseja ler "${story.title}" para ${childData?.childName}?`,
-            [
-                { text: 'Cancelar', style: 'cancel' },
-                {
-                    text: 'Começar',
-                    onPress: () => {
-                        Alert.alert('Sucesso', `Iniciando leitura de "${story.title}"!`);
-                    }
-                }
-            ]
-        );
+    const handleBookPress = (book) => {
+        // Navegar para a tela de detalhes do livro
+        navigation.navigate('BookDetails', { book });
     };
 
-    const handleSeeAllStories = () => {
-        navigation.navigate('Stories');
+    const handleSearch = () => {
+        // Navegar para StoriesScreen com a query de busca
+        if (searchQuery.trim() !== '') {
+            navigation.navigate('Stories', {
+                searchQuery: searchQuery,
+                category: 'all'
+            });
+        }
     };
 
     const handleCarouselButton = (buttonText) => {
         switch (buttonText) {
             case 'Explorar':
-                navigation.navigate('Stories');
+                navigation.navigate('Stories', {
+                    searchQuery: '',
+                    category: 'all'
+                });
                 break;
             case 'Ler Agora':
-                if (childData.featuredStories.length > 0) {
-                    handleReadStory(childData.featuredStories[0]);
+                if (booksData.popular.length > 0) {
+                    handleBookPress(booksData.popular[0]);
                 }
                 break;
             case 'Ver Progresso':
@@ -326,6 +340,20 @@ export default function ParentDashboardScreen({ navigation }) {
             default:
                 break;
         }
+    };
+
+    const handleCategoryPress = (category) => {
+        navigation.navigate('Stories', {
+            searchQuery: '',
+            category: category
+        });
+    };
+
+    const handleSeeAllStories = () => {
+        navigation.navigate('Stories', {
+            searchQuery: '',
+            category: 'all'
+        });
     };
 
     if (loading) {
@@ -359,166 +387,167 @@ export default function ParentDashboardScreen({ navigation }) {
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
             >
-                {/* Header Simples */}
-                <View style={styles.simpleHeader}>
+                {/* Header */}
+                <View style={styles.header}>
                     <View>
-                        <Text style={styles.welcomeText}>Olá, Pai/Mãe! 👋</Text>
-                        <Text style={styles.subtitle}>Acompanhando {childData?.childName}, {childData?.age} anos</Text>
+                        <Text style={styles.welcomeText}>Olá, Pais! </Text>
+                        <Text style={styles.subtitle}>Bem-vindo ao ArtFlow</Text>
                     </View>
-                    <TouchableOpacity style={styles.notificationButton}>
-                        <Ionicons name="notifications" size={24} color="#ffd700" />
+                    <TouchableOpacity style={styles.profileButton}>
+                        <Ionicons name="person" size={24} color="#ffd700" />
                     </TouchableOpacity>
                 </View>
 
-                {/* Carrossel Principal */}
-                <View style={styles.carouselContainer}>
-                    <Animated.FlatList
-                        data={carouselData}
-                        renderItem={({ item, index }) => (
-                            <View style={styles.carouselItem}>
-                                <LinearGradient
-                                    colors={item.gradient}
-                                    style={styles.carouselGradient}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 1 }}
-                                >
-                                    <View style={styles.carouselContent}>
-                                        <Text style={styles.carouselTitle}>{item.title}</Text>
-                                        <Text style={styles.carouselDescription}>{item.description}</Text>
-                                        <TouchableOpacity
-                                            style={styles.carouselButton}
-                                            onPress={() => handleCarouselButton(item.buttonText)}
-                                        >
-                                            <Text style={styles.carouselButtonText}>{item.buttonText}</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                    <View style={styles.carouselIcon}>
-                                        <Ionicons name={item.icon} size={80} color="rgba(255, 255, 255, 0.3)" />
-                                    </View>
-                                </LinearGradient>
-                            </View>
+                {/* Barra de Pesquisa */}
+                <View style={styles.searchContainer}>
+                    <View style={styles.searchBar}>
+                        <TouchableOpacity onPress={handleSearch}>
+                            <Ionicons name="search" size={20} color="rgba(255, 255, 255, 0.6)" />
+                        </TouchableOpacity>
+                        <TextInput
+                            style={styles.searchInput}
+                            placeholder="Procurar por Livros..."
+                            placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                            value={searchQuery}
+                            onChangeText={setSearchQuery}
+                            onSubmitEditing={handleSearch}
+                            returnKeyType="search"
+                        />
+                        {searchQuery !== '' && (
+                            <TouchableOpacity onPress={() => setSearchQuery('')}>
+                                <Ionicons name="close-circle" size={20} color="rgba(255, 255, 255, 0.6)" />
+                            </TouchableOpacity>
                         )}
-                        keyExtractor={(item, index) => index.toString()}
-                        horizontal
-                        pagingEnabled
-                        showsHorizontalScrollIndicator={false}
-                        scrollEventThrottle={16}
-                    />
-                    <View style={styles.carouselDots}>
-                        {carouselData.map((_, index) => (
-                            <View
-                                key={index}
-                                style={[
-                                    styles.dot,
-                                    index === 0 && styles.dotActive // Simplificado para demonstração
-                                ]}
-                            />
-                        ))}
                     </View>
                 </View>
 
-                {/* Métricas de Progresso */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Progresso de Hoje</Text>
-                    <View style={styles.metricsGrid}>
-                        <ProgressMetric
-                            title="Tempo de Leitura"
-                            value={childData?.progress?.readingTime || "0 min"}
-                            subtitle="Hoje"
-                            icon="time"
-                            color={['#6b2fa0', '#4a1f7a']}
-                        />
-                        <ProgressMetric
-                            title="Histórias Lidas"
-                            value={childData?.progress?.storiesRead || "0"}
-                            subtitle="Esta semana"
-                            icon="book"
-                            color={['#ffd700', '#f6ad55']}
-                        />
-                        <ProgressMetric
-                            title="Meta Semanal"
-                            value={childData?.progress?.weeklyGoal || "0/7 dias"}
-                            subtitle="Dias de leitura"
-                            icon="calendar"
-                            color={['#ff6b6b', '#ff9e7d']}
-                        />
-                        <ProgressMetric
-                            title="Categoria Favorita"
-                            value={childData?.progress?.favoriteCategory || "Nenhuma"}
-                            subtitle="Preferência"
-                            icon="heart"
-                            color={['#4caf50', '#66bb6a']}
-                        />
-                    </View>
-                </View>
+                {/* Navegação Superior (igual à imagem) */}
+                <TopNavigation activeTab={activeTopTab} onTabChange={setActiveTopTab} />
 
-                {/* Histórias Recomendadas */}
+                {/* Carrossel Principal */}
+                <ImageCarousel
+                    data={carouselData}
+                    onButtonPress={handleCarouselButton}
+                />
+
+                {/* Seção Popular */}
                 <View style={styles.section}>
                     <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>Histórias para Ler Juntos</Text>
+                        <Text style={styles.sectionTitle}>Popular</Text>
                         <TouchableOpacity onPress={handleSeeAllStories}>
-                            <Text style={styles.seeAllText}>Ver todas</Text>
+                            <Text style={styles.seeAllText}>Ver Todos</Text>
                         </TouchableOpacity>
                     </View>
                     <FlatList
-                        data={childData?.featuredStories || []}
+                        data={booksData.popular}
                         horizontal
                         showsHorizontalScrollIndicator={false}
                         keyExtractor={(item) => item.id.toString()}
-                        contentContainerStyle={styles.storiesList}
+                        contentContainerStyle={styles.booksList}
                         renderItem={({ item }) => (
-                            <StoryCard
+                            <BookCard
                                 title={item.title}
                                 author={item.author}
-                                duration={item.duration}
-                                onPress={() => handleReadStory(item)}
+                                type={item.type}
+                                onPress={() => handleBookPress(item)}
                             />
                         )}
                     />
                 </View>
 
-                {/* Dicas de Leitura */}
-                <View style={styles.tipsCard}>
-                    <LinearGradient
-                        colors={['rgba(107, 47, 160, 0.8)', 'rgba(74, 31, 122, 0.9)']}
-                        style={styles.tipsGradient}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                    >
-                        <Text style={styles.tipsTitle}>💡 Dicas de Leitura</Text>
-                        <View style={styles.tipsList}>
-                            {(childData?.readingTips || []).map((tip, index) => (
-                                <Text key={index} style={styles.tipItem}>• {tip}</Text>
-                            ))}
-                        </View>
-                    </LinearGradient>
+                {/* Seção eBooks */}
+                <View style={styles.section}>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>eBooks</Text>
+                        <TouchableOpacity onPress={() => handleCategoryPress('ebooks')}>
+                            <Text style={styles.seeAllText}>Ver Todos</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <FlatList
+                        data={booksData.ebooks}
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        keyExtractor={(item) => item.id.toString()}
+                        contentContainerStyle={styles.booksList}
+                        renderItem={({ item }) => (
+                            <BookCard
+                                title={item.title}
+                                author={item.author}
+                                type={item.type}
+                                onPress={() => handleBookPress(item)}
+                            />
+                        )}
+                    />
                 </View>
 
-                {/* Próxima Meta */}
-                <View style={styles.goalCard}>
-                    <LinearGradient
-                        colors={['rgba(255, 215, 0, 0.9)', 'rgba(246, 173, 85, 0.9)']}
-                        style={styles.goalGradient}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                    >
-                        <View style={styles.goalHeader}>
-                            <Ionicons name="trophy" size={24} color="#2d1554" />
-                            <Text style={styles.goalTitle}>Próxima Conquista</Text>
-                        </View>
-                        <Text style={styles.goalDescription}>
-                            Leia por 7 dias consecutivos e desbloqueie a conquista "Leitor Dedicado"
-                        </Text>
-                        <View style={styles.progressBar}>
-                            <View style={styles.progressFill} />
-                        </View>
-                        <Text style={styles.progressText}>5 de 7 dias completados</Text>
-                    </LinearGradient>
+                {/* Categorias Rápidas */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>    Procurar Categorias</Text>
+                    <View style={styles.categoriesGrid}>
+                        <TouchableOpacity
+                            style={styles.categoryButton}
+                            onPress={() => handleCategoryPress('adventure')}
+                        >
+                            <LinearGradient
+                                colors={['#6b2fa0', '#8a4cbf']}
+                                style={styles.categoryGradient}
+                            >
+                                <Ionicons name="trail-sign" size={24} color="#fff" />
+                                <Text style={styles.categoryButtonText}>Aventura</Text>
+                            </LinearGradient>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={styles.categoryButton}
+                            onPress={() => handleCategoryPress('fantasy')}
+                        >
+                            <LinearGradient
+                                colors={['#ff6b6b', '#ff9e7d']}
+                                style={styles.categoryGradient}
+                            >
+                                <Ionicons name="sparkles" size={24} color="#fff" />
+                                <Text style={styles.categoryButtonText}>Fantasia</Text>
+                            </LinearGradient>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={styles.categoryButton}
+                            onPress={() => handleCategoryPress('educational')}
+                        >
+                            <LinearGradient
+                                colors={['#4caf50', '#66bb6a']}
+                                style={styles.categoryGradient}
+                            >
+                                <Ionicons name="school" size={24} color="#fff" />
+                                <Text style={styles.categoryButtonText}>Educativo</Text>
+                            </LinearGradient>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={styles.categoryButton}
+                            onPress={() => handleCategoryPress('animals')}
+                        >
+                            <LinearGradient
+                                colors={['#ffd700', '#f6ad55']}
+                                style={styles.categoryGradient}
+                            >
+                                <Ionicons name="paw" size={24} color="#fff" />
+                                <Text style={styles.categoryButtonText}>Animais</Text>
+                            </LinearGradient>
+                        </TouchableOpacity>
+                    </View>
                 </View>
+
+                {/* Espaço para o menu inferior */}
+                <View style={styles.bottomSpacer} />
             </ScrollView>
 
-            {/* Menu Inferior */}
-            <BottomTabBar activeTab={activeTab} onTabChange={setActiveTab} navigation={navigation} />
+            {/* Menu Inferior (Footer completo) */}
+            <BottomTabBar
+                activeTab={activeBottomTab}
+                onTabChange={setActiveBottomTab}
+                navigation={navigation}
+            />
         </View>
     );
 }
@@ -551,15 +580,15 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     scrollContent: {
-        paddingBottom: 100,
+        paddingBottom: 90,
     },
-    simpleHeader: {
+    header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 20,
         paddingTop: 60,
-        paddingBottom: 20,
+        paddingBottom: 15,
     },
     welcomeText: {
         fontSize: 28,
@@ -571,30 +600,67 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: 'rgba(255, 255, 255, 0.8)',
     },
-    notificationButton: {
+    profileButton: {
         padding: 10,
         borderRadius: 20,
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
     },
-    section: {
+    searchContainer: {
         paddingHorizontal: 20,
-        marginBottom: 25,
+        marginBottom: 20,
     },
-    sectionHeader: {
+    searchBar: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 15,
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        borderRadius: 15,
+        paddingHorizontal: 15,
+        paddingVertical: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 215, 0, 0.2)',
     },
-    sectionTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#ffd700',
+    searchInput: {
+        flex: 1,
+        color: '#fff',
+        fontSize: 16,
+        marginLeft: 10,
+        marginRight: 10,
     },
-    seeAllText: {
-        color: '#ffd700',
-        fontSize: 14,
+    // Navegação Superior
+    topNavigation: {
+        marginBottom: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    navScrollContent: {
+        paddingHorizontal: 20,
+    },
+    navItem: {
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        marginRight: 15,
+        position: 'relative',
+    },
+    navItemActive: {
+        // Estilo ativo sem background
+    },
+    navLabel: {
+        color: 'rgba(255, 255, 255, 0.7)',
+        fontSize: 16,
         fontWeight: '500',
+    },
+    navLabelActive: {
+        color: '#ffd700',
+        fontWeight: 'bold',
+    },
+    activeIndicator: {
+        position: 'absolute',
+        bottom: -1,
+        left: 0,
+        right: 0,
+        height: 3,
+        backgroundColor: '#ffd700',
+        borderRadius: 2,
     },
     // Carrossel
     carouselContainer: {
@@ -659,60 +725,32 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffd700',
         width: 20,
     },
-    // Métricas
-    metricsGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
+    // Seções
+    section: {
+        marginBottom: 30,
     },
-    metricCard: {
-        width: '48%',
-        marginBottom: 15,
-        borderRadius: 15,
-        overflow: 'hidden',
-    },
-    metricGradient: {
-        padding: 15,
-        borderRadius: 15,
-    },
-    metricContent: {
+    sectionHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        paddingHorizontal: 20,
+        marginBottom: 15,
     },
-    metricText: {
-        flex: 1,
-    },
-    metricTitle: {
-        color: 'rgba(255, 255, 255, 0.9)',
-        fontSize: 12,
-        marginBottom: 5,
-        fontWeight: '600',
-    },
-    metricValue: {
-        color: '#fff',
-        fontSize: 18,
+    sectionTitle: {
+        fontSize: 22,
         fontWeight: 'bold',
-        marginBottom: 2,
+        color: '#ffd700',
     },
-    metricSubtitle: {
-        color: 'rgba(255, 255, 255, 0.8)',
-        fontSize: 10,
+    seeAllText: {
+        color: '#ffd700',
+        fontSize: 14,
         fontWeight: '500',
     },
-    metricIcon: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        justifyContent: 'center',
-        alignItems: 'center',
+    // Lista de Livros
+    booksList: {
+        paddingHorizontal: 20,
     },
-    // Histórias
-    storiesList: {
-        paddingRight: 20,
-    },
-    storyCard: {
+    bookCard: {
         width: 160,
         marginRight: 15,
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -721,11 +759,12 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: 'rgba(255, 215, 0, 0.2)',
     },
-    storyImageContainer: {
+    bookImageContainer: {
         alignItems: 'center',
         marginBottom: 10,
+        position: 'relative',
     },
-    storyImagePlaceholder: {
+    bookImagePlaceholder: {
         width: 80,
         height: 80,
         borderRadius: 10,
@@ -734,102 +773,65 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 8,
     },
-    storyDuration: {
-        backgroundColor: 'rgba(255, 215, 0, 0.2)',
+    ebookBadge: {
+        position: 'absolute',
+        top: -5,
+        right: -5,
+        backgroundColor: '#ff6b6b',
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 10,
     },
-    durationText: {
-        color: '#ffd700',
+    ebookText: {
+        color: '#fff',
         fontSize: 10,
-        fontWeight: '600',
+        fontWeight: 'bold',
     },
-    storyInfo: {
+    bookInfo: {
         flex: 1,
     },
-    storyTitle: {
+    bookTitle: {
         color: '#fff',
         fontSize: 14,
         fontWeight: 'bold',
         marginBottom: 5,
         lineHeight: 18,
+        textAlign: 'center',
     },
-    storyAuthor: {
+    bookAuthor: {
         color: 'rgba(255, 255, 255, 0.7)',
         fontSize: 12,
-    },
-    // Dicas
-    tipsCard: {
-        marginHorizontal: 20,
-        borderRadius: 20,
-        overflow: 'hidden',
-        marginBottom: 20,
-    },
-    tipsGradient: {
-        padding: 20,
-    },
-    tipsTitle: {
-        color: '#ffd700',
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 15,
-    },
-    tipsList: {
-        paddingLeft: 10,
-    },
-    tipItem: {
-        color: 'rgba(255, 255, 255, 0.95)',
-        fontSize: 14,
-        marginBottom: 8,
-        lineHeight: 20,
-        fontWeight: '500',
-    },
-    // Meta
-    goalCard: {
-        marginHorizontal: 20,
-        borderRadius: 20,
-        overflow: 'hidden',
-        marginBottom: 20,
-    },
-    goalGradient: {
-        padding: 20,
-    },
-    goalHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 10,
-    },
-    goalTitle: {
-        color: '#2d1554',
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginLeft: 10,
-    },
-    goalDescription: {
-        color: '#2d1554',
-        fontSize: 14,
-        marginBottom: 15,
-        lineHeight: 20,
-        fontWeight: '500',
-    },
-    progressBar: {
-        height: 8,
-        backgroundColor: 'rgba(45, 21, 84, 0.3)',
-        borderRadius: 4,
-        marginBottom: 8,
-    },
-    progressFill: {
-        height: '100%',
-        width: '70%',
-        backgroundColor: '#2d1554',
-        borderRadius: 4,
-    },
-    progressText: {
-        color: '#2d1554',
-        fontSize: 12,
-        fontWeight: '600',
         textAlign: 'center',
+    },
+    // Categorias
+    categoriesGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+    },
+    categoryButton: {
+        width: '48%',
+        height: 80,
+        marginBottom: 15,
+        borderRadius: 15,
+        overflow: 'hidden',
+    },
+    categoryGradient: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 15,
+    },
+    categoryButtonText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginTop: 8,
+        textAlign: 'center',
+    },
+    bottomSpacer: {
+        height: 30,
     },
     // Menu Inferior
     bottomTabBar: {
@@ -837,31 +839,45 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        height: 90,
-        paddingBottom: 20,
+        height: 80,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        overflow: 'hidden',
     },
     tabBarGradient: {
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-around',
         paddingHorizontal: 10,
+        paddingTop: 10,
+        paddingBottom: 25,
     },
-    tabItem: {
-        flex: 1,
+    bottomTabItem: {
         alignItems: 'center',
-        paddingVertical: 8,
-        borderRadius: 15,
+        justifyContent: 'center',
+        flex: 1,
     },
-    tabItemActive: {
-        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+    bottomTabItemActive: {
+        // Estilo para item ativo
     },
-    tabLabel: {
-        color: 'rgba(255, 255, 255, 0.6)',
+    tabIconContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 4,
+    },
+    tabIconContainerActive: {
+        backgroundColor: 'rgba(255, 215, 0, 0.15)',
+    },
+    bottomTabLabel: {
+        color: 'rgba(255, 255, 255, 0.7)',
         fontSize: 12,
-        marginTop: 4,
         fontWeight: '500',
     },
-    tabLabelActive: {
+    bottomTabLabelActive: {
         color: '#ffd700',
         fontWeight: 'bold',
     },

@@ -16,27 +16,72 @@ import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 
-// Componente de Menu Inferior (mesmo do ParentDashboard)
+// Componente de Menu Superior (igual ao ParentDashboard)
+const TopNavigation = ({ activeTab, onTabChange }) => {
+    const tabs = [
+        { key: 'all', label: 'All' },
+        { key: 'ebooks', label: 'eBooks' },
+        { key: 'news', label: 'News' },
+        { key: 'fiction', label: 'Fiction' },
+        { key: 'manage', label: 'Manage' },
+        { key: 'fortress', label: 'Fortress' }
+    ];
+
+    return (
+        <View style={styles.topNavigation}>
+            <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.navScrollContent}
+            >
+                {tabs.map((tab) => (
+                    <TouchableOpacity
+                        key={tab.key}
+                        style={[
+                            styles.navItem,
+                            activeTab === tab.key && styles.navItemActive
+                        ]}
+                        onPress={() => onTabChange(tab.key)}
+                    >
+                        <Text style={[
+                            styles.navLabel,
+                            activeTab === tab.key && styles.navLabelActive
+                        ]}>
+                            {tab.label}
+                        </Text>
+                        {activeTab === tab.key && <View style={styles.activeIndicator} />}
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
+        </View>
+    );
+};
+
+// Componente de Menu Inferior (igual ao ParentDashboard)
 const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
     const tabs = [
-        { key: 'home', icon: 'home', label: 'Início', screen: 'ParentDashboard' },
-        { key: 'stories', icon: 'book', label: 'Histórias', screen: 'Stories' },
-        { key: 'progress', icon: 'bar-chart', label: 'Progresso', screen: 'Progress' },
-        { key: 'achievements', icon: 'trophy', label: 'Conquistas', screen: 'Achievements' },
-        { key: 'profile', icon: 'person', label: 'Perfil', screen: 'Profile' }
+        { key: 'home', icon: 'home', label: 'Início' },
+        { key: 'search', icon: 'search', label: 'Buscar' },
+        { key: 'library', icon: 'library', label: 'Biblioteca' },
+        { key: 'profile', icon: 'person', label: 'Perfil' }
     ];
 
     const handleTabPress = (tab) => {
         onTabChange(tab.key);
-        if (tab.screen !== 'Stories') {
-            navigation.navigate(tab.screen);
+        // Navegação para as respectivas telas
+        if (tab.key === 'home') {
+            navigation.navigate('ParentDashboard');
+        } else if (tab.key === 'profile') {
+            navigation.navigate('Profile');
+        } else if (tab.key === 'search') {
+            // Já está na tela de busca, não faz nada ou pode focar na busca
         }
     };
 
     return (
         <View style={styles.bottomTabBar}>
             <LinearGradient
-                colors={['rgba(26, 15, 58, 0.95)', 'rgba(45, 21, 84, 0.95)']}
+                colors={['rgba(26, 15, 58, 0.98)', 'rgba(45, 21, 84, 0.98)']}
                 style={styles.tabBarGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
@@ -45,19 +90,24 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
                     <TouchableOpacity
                         key={tab.key}
                         style={[
-                            styles.tabItem,
-                            activeTab === tab.key && styles.tabItemActive
+                            styles.bottomTabItem,
+                            activeTab === tab.key && styles.bottomTabItemActive
                         ]}
                         onPress={() => handleTabPress(tab)}
                     >
-                        <Ionicons
-                            name={tab.icon}
-                            size={24}
-                            color={activeTab === tab.key ? '#ffd700' : 'rgba(255, 255, 255, 0.6)'}
-                        />
+                        <View style={[
+                            styles.tabIconContainer,
+                            activeTab === tab.key && styles.tabIconContainerActive
+                        ]}>
+                            <Ionicons
+                                name={tab.icon}
+                                size={24}
+                                color={activeTab === tab.key ? '#ffd700' : 'rgba(255, 255, 255, 0.7)'}
+                            />
+                        </View>
                         <Text style={[
-                            styles.tabLabel,
-                            activeTab === tab.key && styles.tabLabelActive
+                            styles.bottomTabLabel,
+                            activeTab === tab.key && styles.bottomTabLabelActive
                         ]}>
                             {tab.label}
                         </Text>
@@ -68,15 +118,16 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
     );
 };
 
-export default function StoriesScreen({ navigation }) {
+export default function StoriesScreen({ navigation, route }) {
     const [stories, setStories] = useState([]);
     const [filteredStories, setFilteredStories] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
+    const [activeTopTab, setActiveTopTab] = useState('all');
+    const [activeBottomTab, setActiveBottomTab] = useState('search');
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('stories'); // Tab ativa padrão
 
-    // Categorias disponíveis
+    // Categorias disponíveis (para filtro interno)
     const categories = [
         { id: 'all', name: 'Todas', icon: 'apps' },
         { id: 'adventure', name: 'Aventura', icon: 'trail-sign' },
@@ -179,13 +230,22 @@ export default function StoriesScreen({ navigation }) {
     ];
 
     useEffect(() => {
+        // Verificar se há parâmetros de busca
+        if (route.params?.searchQuery) {
+            setSearchQuery(route.params.searchQuery);
+        }
+
+        if (route.params?.category) {
+            setSelectedCategory(route.params.category);
+        }
+
         // Simular carregamento de dados
         setTimeout(() => {
             setStories(mockStories);
             setFilteredStories(mockStories);
             setLoading(false);
         }, 1000);
-    }, []);
+    }, [route.params]);
 
     useEffect(() => {
         filterStories();
@@ -236,6 +296,14 @@ export default function StoriesScreen({ navigation }) {
                 : story
         );
         setStories(updatedStories);
+    };
+
+    const clearSearch = () => {
+        setSearchQuery('');
+        // Limpar também os parâmetros da rota se existirem
+        if (route.params) {
+            navigation.setParams({ searchQuery: '', category: 'all' });
+        }
     };
 
     const renderStoryItem = ({ item }) => (
@@ -344,43 +412,45 @@ export default function StoriesScreen({ navigation }) {
                 end={{ x: 1, y: 1 }}
             />
 
-            {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                >
-                    <Ionicons name="arrow-back" size={24} color="#ffd700" />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Histórias</Text>
-                <View style={styles.headerRight} />
-            </View>
-
             <ScrollView
                 style={styles.scrollView}
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
             >
-                {/* Barra de Pesquisa */}
+                {/* Header (igual ao ParentDashboard) */}
+                <View style={styles.header}>
+                    <View>
+                        <Text style={styles.welcomeText}>Olá, Pais!</Text>
+                        <Text style={styles.subtitle}>Procure pelos Melhores Livros</Text>
+                    </View>
+                    <TouchableOpacity style={styles.profileButton}>
+                        <Ionicons name="person" size={24} color="#ffd700" />
+                    </TouchableOpacity>
+                </View>
+
+                {/* Barra de Pesquisa (igual ao ParentDashboard) */}
                 <View style={styles.searchContainer}>
-                    <View style={styles.searchInputContainer}>
+                    <View style={styles.searchBar}>
                         <Ionicons name="search" size={20} color="rgba(255, 255, 255, 0.6)" />
                         <TextInput
                             style={styles.searchInput}
-                            placeholder="Buscar histórias..."
+                            placeholder="Procure por Livros..."
                             placeholderTextColor="rgba(255, 255, 255, 0.6)"
                             value={searchQuery}
                             onChangeText={setSearchQuery}
                         />
                         {searchQuery !== '' && (
-                            <TouchableOpacity onPress={() => setSearchQuery('')}>
+                            <TouchableOpacity onPress={clearSearch}>
                                 <Ionicons name="close-circle" size={20} color="rgba(255, 255, 255, 0.6)" />
                             </TouchableOpacity>
                         )}
                     </View>
                 </View>
 
-                {/* Categorias */}
+                {/* Navegação Superior (igual ao ParentDashboard) */}
+                <TopNavigation activeTab={activeTopTab} onTabChange={setActiveTopTab} />
+
+                {/* Categorias (filtro interno) */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Categorias</Text>
                     <FlatList
@@ -397,6 +467,8 @@ export default function StoriesScreen({ navigation }) {
                 <View style={styles.resultsContainer}>
                     <Text style={styles.resultsText}>
                         {filteredStories.length} {filteredStories.length === 1 ? 'história encontrada' : 'histórias encontradas'}
+                        {searchQuery && ` para "${searchQuery}"`}
+                        {selectedCategory !== 'all' && ` em ${categories.find(cat => cat.id === selectedCategory)?.name}`}
                     </Text>
                 </View>
 
@@ -415,15 +487,22 @@ export default function StoriesScreen({ navigation }) {
                             <Ionicons name="book" size={60} color="rgba(255, 255, 255, 0.3)" />
                             <Text style={styles.emptyStateTitle}>Nenhuma história encontrada</Text>
                             <Text style={styles.emptyStateText}>
-                                Tente ajustar sua busca ou selecionar outra categoria
+                                {searchQuery || selectedCategory !== 'all'
+                                    ? 'Tente ajustar sua busca ou selecionar outra categoria'
+                                    : 'Não há histórias disponíveis no momento'
+                                }
                             </Text>
                         </View>
                     )}
                 </View>
             </ScrollView>
 
-            {/* Menu Inferior */}
-            <BottomTabBar activeTab={activeTab} onTabChange={setActiveTab} navigation={navigation} />
+            {/* Menu Inferior (igual ao ParentDashboard) */}
+            <BottomTabBar
+                activeTab={activeBottomTab}
+                onTabChange={setActiveBottomTab}
+                navigation={navigation}
+            />
         </View>
     );
 }
@@ -451,38 +530,36 @@ const styles = StyleSheet.create({
         top: 0,
         height: height,
     },
+    // Header (igual ao ParentDashboard)
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 20,
         paddingTop: 60,
-        paddingBottom: 20,
+        paddingBottom: 15,
     },
-    backButton: {
-        padding: 8,
+    welcomeText: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#ffd700',
+        marginBottom: 5,
+    },
+    subtitle: {
+        fontSize: 16,
+        color: 'rgba(255, 255, 255, 0.8)',
+    },
+    profileButton: {
+        padding: 10,
         borderRadius: 20,
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
     },
-    headerTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#ffd700',
-    },
-    headerRight: {
-        width: 40,
-    },
-    scrollView: {
-        flex: 1,
-    },
-    scrollContent: {
-        paddingBottom: 100, // Espaço para o menu inferior
-    },
+    // Barra de Pesquisa (igual ao ParentDashboard)
     searchContainer: {
         paddingHorizontal: 20,
         marginBottom: 20,
     },
-    searchInputContainer: {
+    searchBar: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -490,7 +567,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         paddingVertical: 12,
         borderWidth: 1,
-        borderColor: 'rgba(255, 215, 0, 0.3)',
+        borderColor: 'rgba(255, 215, 0, 0.2)',
     },
     searchInput: {
         flex: 1,
@@ -499,6 +576,49 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         marginRight: 10,
     },
+    // Navegação Superior (igual ao ParentDashboard)
+    topNavigation: {
+        marginBottom: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    navScrollContent: {
+        paddingHorizontal: 20,
+    },
+    navItem: {
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        marginRight: 15,
+        position: 'relative',
+    },
+    navItemActive: {
+        // Estilo ativo sem background
+    },
+    navLabel: {
+        color: 'rgba(255, 255, 255, 0.7)',
+        fontSize: 16,
+        fontWeight: '500',
+    },
+    navLabelActive: {
+        color: '#ffd700',
+        fontWeight: 'bold',
+    },
+    activeIndicator: {
+        position: 'absolute',
+        bottom: -1,
+        left: 0,
+        right: 0,
+        height: 3,
+        backgroundColor: '#ffd700',
+        borderRadius: 2,
+    },
+    scrollView: {
+        flex: 1,
+    },
+    scrollContent: {
+        paddingBottom: 90, // Espaço para o footer
+    },
+    // Seções
     section: {
         marginBottom: 20,
     },
@@ -647,11 +767,6 @@ const styles = StyleSheet.create({
         paddingVertical: 5,
         borderRadius: 10,
     },
-    categoryText: {
-        color: '#fff',
-        fontSize: 12,
-        fontWeight: '500',
-    },
     emptyState: {
         alignItems: 'center',
         justifyContent: 'center',
@@ -672,37 +787,51 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         lineHeight: 22,
     },
-    // Estilos do Menu Inferior
+    // Menu Inferior (igual ao ParentDashboard)
     bottomTabBar: {
         position: 'absolute',
         bottom: 0,
         left: 0,
         right: 0,
-        height: 90,
-        paddingBottom: 20,
+        height: 80,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        overflow: 'hidden',
     },
     tabBarGradient: {
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-around',
         paddingHorizontal: 10,
+        paddingTop: 10,
+        paddingBottom: 25,
     },
-    tabItem: {
-        flex: 1,
+    bottomTabItem: {
         alignItems: 'center',
-        paddingVertical: 8,
-        borderRadius: 15,
+        justifyContent: 'center',
+        flex: 1,
     },
-    tabItemActive: {
-        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+    bottomTabItemActive: {
+        // Estilo para item ativo
     },
-    tabLabel: {
-        color: 'rgba(255, 255, 255, 0.6)',
+    tabIconContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 4,
+    },
+    tabIconContainerActive: {
+        backgroundColor: 'rgba(255, 215, 0, 0.15)',
+    },
+    bottomTabLabel: {
+        color: 'rgba(255, 255, 255, 0.7)',
         fontSize: 12,
-        marginTop: 4,
         fontWeight: '500',
     },
-    tabLabelActive: {
+    bottomTabLabelActive: {
         color: '#ffd700',
         fontWeight: 'bold',
     },
