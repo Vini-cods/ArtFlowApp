@@ -20,19 +20,14 @@ import { Ionicons } from '@expo/vector-icons';
 const { width, height } = Dimensions.get('window');
 
 // Componente de Card para Livros
-const BookCard = ({ title, author, image, type, onPress }) => (
+const BookCard = ({ title, author, image, onPress }) => (
     <TouchableOpacity style={styles.bookCard} onPress={onPress}>
         <View style={styles.bookImageContainer}>
             {image ? (
-                <Image source={image} style={styles.bookImage} />
+                <Image source={image} style={styles.bookImage} resizeMode="cover" />
             ) : (
                 <View style={styles.bookImagePlaceholder}>
-                    <Ionicons name="book" size={width * 0.1} color="#ffd700" />
-                </View>
-            )}
-            {type === 'eBook' && (
-                <View style={styles.ebookBadge}>
-                    <Text style={styles.ebookText}>eBook</Text>
+                    <Ionicons name="book" size={width * 0.08} color="#ffd700" />
                 </View>
             )}
         </View>
@@ -188,7 +183,6 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
     );
 };
 
-// Dados dos livros com URLs de placeholder
 const mockBooks = {
     popular: [
         {
@@ -197,7 +191,7 @@ const mockBooks = {
             author: 'Sofia Mendes',
             type: 'book',
             duration: 8,
-            image: { uri: 'https://placehold.co/150x200/6b2fa0/FFFFFF?text=Aventura+Floresta' },
+            image: require('../assets/Aventura na Floresta.png'),
             description: 'Uma emocionante jornada pela floresta amazônica, onde dois amigos descobrem criaturas mágicas e aprendem sobre a importância de preservar a natureza.',
             category: 'Aventura, Natureza',
             ageRange: '5-10 anos'
@@ -208,7 +202,7 @@ const mockBooks = {
             author: 'Carlos Silva',
             type: 'book',
             duration: 10,
-            image: { uri: 'https://placehold.co/150x200/8a4cbf/FFFFFF?text=Castelo+Mágico' },
+            image: require('../assets/O castelo magico.png'),
             description: 'Em um reino distante, uma jovem princesa descobre um castelo encantado cheio de segredos e criaturas fantásticas que precisam de sua ajuda.',
             category: 'Fantasia, Aventura',
             ageRange: '4-8 anos'
@@ -219,7 +213,7 @@ const mockBooks = {
             author: 'Ana Costa',
             type: 'book',
             duration: 12,
-            image: { uri: 'https://placehold.co/150x200/2d1554/FFFFFF?text=Viagem+Espaço' },
+            image: require('../assets/Viagem ao espaço.png'),
             description: 'Junte-se à tripulação da nave estelar Exploradora em uma missão para descobrir novos planetas e fazer amizade com alienígenas curiosos.',
             category: 'Ficção Científica',
             ageRange: '6-12 anos'
@@ -230,7 +224,7 @@ const mockBooks = {
             author: 'Miguel Santos',
             type: 'book',
             duration: 15,
-            image: { uri: 'https://placehold.co/150x200/ff6b6b/FFFFFF?text=Tesouro+Perdido' },
+            image: require('../assets/O tesouro perdido.png'),
             description: 'Um mapa misterioso leva três irmãos em uma caça ao tesouro cheia de enigmas, desafios e descobertas sobre trabalho em equipe.',
             category: 'Aventura, Mistério',
             ageRange: '7-12 anos'
@@ -241,9 +235,9 @@ const mockBooks = {
             id: 5,
             title: 'O Pequeno Príncipe',
             author: 'Antoine de Saint-Exupéry',
-            type: 'eBook',
+            type: 'book',
             duration: 15,
-            image: { uri: 'https://placehold.co/150x200/ff9e7d/FFFFFF?text=Pequeno+Príncipe' },
+            image: require('../assets/O pequeno principe.png'),
             description: 'A clássica história de um pequeno príncipe que viaja de planeta em planeta, encontrando personagens peculiares e aprendendo valiosas lições sobre amor e amizade.',
             category: 'Aventura, Fantasia',
             ageRange: '6-12 anos'
@@ -252,9 +246,9 @@ const mockBooks = {
             id: 6,
             title: 'A Menina e o Dragão',
             author: 'Eva Furnari',
-            type: 'eBook',
+            type: 'book',
             duration: 10,
-            image: { uri: 'https://placehold.co/150x200/4caf50/FFFFFF?text=Menina+Dragão' },
+            image: require('../assets/A menina e o dragão.webp'),
             description: 'Uma menina corajosa faz amizade com um dragão que é mal compreendido por todos. Juntos, eles mostram à vila que as aparências enganam.',
             category: 'Fantasia, Amizade',
             ageRange: '5-10 anos'
@@ -263,9 +257,9 @@ const mockBooks = {
             id: 7,
             title: 'No Fundo do Mar',
             author: 'Booksmile',
-            type: 'eBook',
+            type: 'book',
             duration: 12,
-            image: { uri: 'https://placehold.co/150x200/2196f3/FFFFFF?text=Fundo+Mar' },
+            image: require('../assets/no fundo do mar.webp'),
             description: 'Uma aventura submarina onde duas crianças exploram o fundo do mar, descobrindo criaturas incríveis e aprendendo sobre a importância de preservar os oceanos.',
             category: 'Aventura, Natureza',
             ageRange: '4-8 anos'
@@ -274,9 +268,9 @@ const mockBooks = {
             id: 8,
             title: 'O Circo Mágico',
             author: 'Alexandre Brito',
-            type: 'eBook',
+            type: 'book',
             duration: 18,
-            image: { uri: 'https://placehold.co/150x200/ffd700/333333?text=Circo+Mágico' },
+            image: require('../assets/circo magico.jpg'),
             description: 'Quando um circo misterioso chega à cidade, três amigos descobrem que os artistas têm talentos verdadeiramente mágicos e embarcam em uma aventura inesquecível.',
             category: 'Aventura, Fantasia',
             ageRange: '5-9 anos'
@@ -366,6 +360,10 @@ export default function ParentDashboardScreen({ navigation }) {
         navigation.navigate('Library');
     };
 
+    const handleProfilePress = () => {
+        navigation.navigate('Profile');
+    };
+
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
@@ -397,12 +395,18 @@ export default function ParentDashboardScreen({ navigation }) {
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
             >
-                {/* Header - SEM ícone de perfil */}
+                {/* Header - COM ícone de perfil no lado direito */}
                 <View style={styles.header}>
                     <View style={styles.headerContent}>
                         <Text style={styles.welcomeText}>Olá, Pais! </Text>
                         <Text style={styles.subtitle}>Bem-vindo ao ArtFlow</Text>
                     </View>
+                    <TouchableOpacity style={styles.profileButton} onPress={handleProfilePress}>
+                        <Image
+                            source={require('../assets/octo-mascote.png')}
+                            style={styles.profileImage}
+                        />
+                    </TouchableOpacity>
                 </View>
 
                 {/* Carrossel Principal */}
@@ -429,7 +433,6 @@ export default function ParentDashboardScreen({ navigation }) {
                             <BookCard
                                 title={item.title}
                                 author={item.author}
-                                type={item.type}
                                 image={item.image}
                                 onPress={() => handleBookPress(item)}
                             />
@@ -455,7 +458,6 @@ export default function ParentDashboardScreen({ navigation }) {
                             <BookCard
                                 title={item.title}
                                 author={item.author}
-                                type={item.type}
                                 image={item.image}
                                 onPress={() => handleBookPress(item)}
                             />
@@ -633,12 +635,16 @@ const styles = StyleSheet.create({
         paddingBottom: height * 0.11,
     },
     header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         paddingHorizontal: width * 0.05,
         paddingTop: height * 0.06,
         paddingBottom: height * 0.02,
     },
     headerContent: {
         alignItems: 'flex-start',
+        flex: 1,
     },
     welcomeText: {
         fontSize: width * 0.07,
@@ -649,6 +655,16 @@ const styles = StyleSheet.create({
     subtitle: {
         fontSize: width * 0.04,
         color: 'rgba(255, 255, 255, 0.8)',
+    },
+    profileButton: {
+        padding: width * 0.02,
+    },
+    profileImage: {
+        width: width * 0.1,
+        height: width * 0.1,
+        borderRadius: width * 0.05,
+        borderWidth: 2,
+        borderColor: '#ffd700',
     },
     // Carrossel
     carouselContainer: {
@@ -743,53 +759,40 @@ const styles = StyleSheet.create({
         marginRight: width * 0.04,
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
         borderRadius: width * 0.04,
-        padding: width * 0.04,
+        padding: width * 0.03,
         borderWidth: 1,
         borderColor: 'rgba(255, 215, 0, 0.2)',
+        height: width * 0.7, // Altura fixa para o card
     },
     bookImageContainer: {
-        alignItems: 'center',
-        marginBottom: height * 0.01,
-        position: 'relative',
-    },
-    bookImage: {
-        width: width * 0.2,
-        height: width * 0.2,
-        borderRadius: width * 0.03,
-        marginBottom: height * 0.01,
-    },
-    bookImagePlaceholder: {
-        width: width * 0.2,
-        height: width * 0.2,
-        borderRadius: width * 0.03,
-        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+        height: '50%', // Metade do card
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: height * 0.01,
     },
-    ebookBadge: {
-        position: 'absolute',
-        top: -height * 0.005,
-        right: -width * 0.01,
-        backgroundColor: '#ff6b6b',
-        paddingHorizontal: width * 0.02,
-        paddingVertical: height * 0.005,
+    bookImage: {
+        width: '100%',
+        height: '100%',
         borderRadius: width * 0.03,
     },
-    ebookText: {
-        color: '#fff',
-        fontSize: width * 0.025,
-        fontWeight: 'bold',
+    bookImagePlaceholder: {
+        width: '100%',
+        height: '100%',
+        borderRadius: width * 0.03,
+        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     bookInfo: {
-        flex: 1,
+        height: '45%', // Quase metade do card
+        justifyContent: 'center',
     },
     bookTitle: {
         color: '#fff',
         fontSize: width * 0.035,
         fontWeight: 'bold',
         marginBottom: height * 0.005,
-        lineHeight: height * 0.022,
+        lineHeight: height * 0.02,
         textAlign: 'center',
     },
     bookAuthor: {

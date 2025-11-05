@@ -15,10 +15,13 @@ import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 
-// Funções auxiliares para responsividade
+// Funções auxiliares para responsividade melhoradas
 const responsiveWidth = (percentage) => width * (percentage / 100);
 const responsiveHeight = (percentage) => height * (percentage / 100);
-const moderateScale = (size, factor = 0.5) => size + (responsiveWidth(size) - size) * factor;
+const moderateScale = (size, factor = 0.5) => {
+    const scale = width / 375; // Baseado no iPhone 6/7/8
+    return size + (scale * size - size) * factor;
+};
 
 // Componente de Menu Inferior
 const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
@@ -407,33 +410,34 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     scrollContent: {
-        paddingBottom: responsiveHeight(12),
+        paddingBottom: responsiveHeight(10),
+        minHeight: height,
     },
     header: {
-        paddingHorizontal: responsiveWidth(5),
-        paddingTop: responsiveHeight(8),
+        paddingHorizontal: Math.max(responsiveWidth(4), 16),
+        paddingTop: responsiveHeight(6),
         paddingBottom: responsiveHeight(2),
     },
     headerTop: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
-        marginBottom: responsiveHeight(3),
+        marginBottom: responsiveHeight(2.5),
     },
     headerTextContainer: {
         flex: 1,
         marginRight: responsiveWidth(3),
     },
     welcomeText: {
-        fontSize: moderateScale(26),
+        fontSize: moderateScale(24),
         fontWeight: 'bold',
         color: '#ffd700',
-        marginBottom: responsiveHeight(1),
+        marginBottom: responsiveHeight(0.8),
     },
     subtitle: {
-        fontSize: moderateScale(14),
+        fontSize: moderateScale(13),
         color: 'rgba(255, 255, 255, 0.8)',
-        lineHeight: moderateScale(20),
+        lineHeight: moderateScale(18),
     },
     filterButton: {
         padding: moderateScale(8),
@@ -444,46 +448,49 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-around',
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        borderRadius: moderateScale(15),
-        padding: responsiveHeight(2),
+        borderRadius: moderateScale(12),
+        paddingVertical: responsiveHeight(1.5),
+        paddingHorizontal: responsiveWidth(2),
     },
     statItem: {
         alignItems: 'center',
+        flex: 1,
     },
     statNumber: {
-        fontSize: moderateScale(22),
+        fontSize: moderateScale(20),
         fontWeight: 'bold',
         color: '#ffd700',
-        marginBottom: responsiveHeight(0.5),
+        marginBottom: responsiveHeight(0.3),
     },
     statLabel: {
-        fontSize: moderateScale(11),
+        fontSize: moderateScale(10),
         color: 'rgba(255, 255, 255, 0.7)',
         fontWeight: '500',
     },
     categorySection: {
-        marginBottom: responsiveHeight(3),
-        paddingHorizontal: responsiveWidth(5),
+        marginBottom: responsiveHeight(2.5),
+        paddingHorizontal: Math.max(responsiveWidth(4), 16),
     },
     categoryTitle: {
-        fontSize: moderateScale(18),
+        fontSize: moderateScale(16),
         fontWeight: 'bold',
         color: '#ffd700',
-        marginBottom: responsiveHeight(2),
+        marginBottom: responsiveHeight(1.5),
+        marginLeft: responsiveWidth(1),
     },
     booksList: {
-        paddingRight: responsiveWidth(5),
+        paddingRight: responsiveWidth(4),
     },
     bookCard: {
-        width: responsiveWidth(45),
+        width: width * 0.65, // Melhor para scroll horizontal
         marginRight: responsiveWidth(3),
-        borderRadius: moderateScale(15),
+        borderRadius: moderateScale(12),
         overflow: 'hidden',
     },
     bookGradient: {
         padding: moderateScale(12),
-        borderRadius: moderateScale(15),
-        height: responsiveHeight(20),
+        borderRadius: moderateScale(12),
+        height: responsiveHeight(18),
         justifyContent: 'space-between',
     },
     bookHeader: {
@@ -495,26 +502,26 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
     },
     bookIcon: {
-        width: moderateScale(36),
-        height: moderateScale(36),
+        width: moderateScale(32),
+        height: moderateScale(32),
         borderRadius: moderateScale(8),
         backgroundColor: 'rgba(255, 215, 0, 0.1)',
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: moderateScale(6),
+        marginBottom: moderateScale(5),
     },
     childBookIcon: {
         backgroundColor: 'rgba(74, 144, 226, 0.1)',
     },
     bookTypeBadge: {
         backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        paddingHorizontal: moderateScale(6),
+        paddingHorizontal: moderateScale(5),
         paddingVertical: moderateScale(2),
-        borderRadius: moderateScale(6),
+        borderRadius: moderateScale(4),
     },
     bookTypeText: {
         color: '#fff',
-        fontSize: moderateScale(9),
+        fontSize: moderateScale(8),
         fontWeight: 'bold',
     },
     removeButton: {
@@ -526,69 +533,70 @@ const styles = StyleSheet.create({
     },
     bookTitle: {
         color: '#fff',
-        fontSize: moderateScale(13),
+        fontSize: moderateScale(12),
         fontWeight: 'bold',
-        marginBottom: moderateScale(3),
-        lineHeight: moderateScale(16),
+        marginBottom: moderateScale(2),
+        lineHeight: moderateScale(15),
     },
     bookAuthor: {
         color: 'rgba(255, 255, 255, 0.8)',
-        fontSize: moderateScale(11),
-        marginBottom: moderateScale(5),
+        fontSize: moderateScale(10),
+        marginBottom: moderateScale(4),
     },
     bookMeta: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: moderateScale(3),
+        marginBottom: moderateScale(2),
     },
     bookChapters: {
         color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: moderateScale(10),
+        fontSize: moderateScale(9),
         fontWeight: '500',
     },
     bookAge: {
         color: 'rgba(255, 255, 255, 0.6)',
-        fontSize: moderateScale(9),
+        fontSize: moderateScale(8),
     },
     lastRead: {
         color: 'rgba(255, 255, 255, 0.5)',
-        fontSize: moderateScale(9),
+        fontSize: moderateScale(8),
         fontStyle: 'italic',
     },
     emptyState: {
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: responsiveHeight(8),
-        paddingHorizontal: responsiveWidth(10),
+        paddingVertical: responsiveHeight(6),
+        paddingHorizontal: responsiveWidth(8),
+        marginTop: responsiveHeight(2),
     },
     emptyStateTitle: {
-        fontSize: moderateScale(18),
+        fontSize: moderateScale(16),
         fontWeight: 'bold',
         color: '#ffd700',
-        marginTop: responsiveHeight(2),
+        marginTop: responsiveHeight(1.5),
         marginBottom: responsiveHeight(1),
         textAlign: 'center',
     },
     emptyStateText: {
-        fontSize: moderateScale(13),
+        fontSize: moderateScale(12),
         color: 'rgba(255, 255, 255, 0.7)',
         textAlign: 'center',
-        lineHeight: moderateScale(18),
-        marginBottom: responsiveHeight(3),
+        lineHeight: moderateScale(16),
+        marginBottom: responsiveHeight(2.5),
     },
     exploreButton: {
         backgroundColor: '#ffd700',
-        paddingHorizontal: responsiveWidth(6),
-        paddingVertical: responsiveHeight(1.5),
-        borderRadius: moderateScale(25),
+        paddingHorizontal: responsiveWidth(5),
+        paddingVertical: responsiveHeight(1.2),
+        borderRadius: moderateScale(20),
     },
     exploreButtonText: {
         color: '#0f0820',
-        fontSize: moderateScale(14),
+        fontSize: moderateScale(12),
         fontWeight: 'bold',
     },
     bottomSpacer: {
-        height: responsiveHeight(4),
+        height: responsiveHeight(3),
     },
     // Menu Inferior
     bottomTabBar: {
@@ -596,9 +604,9 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        height: responsiveHeight(12),
-        borderTopLeftRadius: moderateScale(20),
-        borderTopRightRadius: moderateScale(20),
+        height: responsiveHeight(10),
+        borderTopLeftRadius: moderateScale(16),
+        borderTopRightRadius: moderateScale(16),
         overflow: 'hidden',
     },
     tabBarGradient: {
@@ -606,9 +614,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-around',
-        paddingHorizontal: responsiveWidth(2),
+        paddingHorizontal: responsiveWidth(1),
         paddingTop: responsiveHeight(1),
-        paddingBottom: responsiveHeight(3),
+        paddingBottom: responsiveHeight(2),
     },
     bottomTabItem: {
         alignItems: 'center',
@@ -616,19 +624,19 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     tabIconContainer: {
-        width: moderateScale(36),
-        height: moderateScale(36),
-        borderRadius: moderateScale(18),
+        width: moderateScale(32),
+        height: moderateScale(32),
+        borderRadius: moderateScale(16),
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: moderateScale(3),
+        marginBottom: moderateScale(2),
     },
     tabIconContainerActive: {
         backgroundColor: 'rgba(255, 215, 0, 0.15)',
     },
     bottomTabLabel: {
         color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: moderateScale(10),
+        fontSize: moderateScale(9),
         fontWeight: '500',
     },
     bottomTabLabelActive: {
