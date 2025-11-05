@@ -15,6 +15,11 @@ import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 
+// Funções auxiliares para responsividade
+const responsiveWidth = (percentage) => width * (percentage / 100);
+const responsiveHeight = (percentage) => height * (percentage / 100);
+const moderateScale = (size, factor = 0.5) => size + (responsiveWidth(size) - size) * factor;
+
 // Componente de Menu Inferior
 const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
     const tabs = [
@@ -30,7 +35,7 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
         if (tab.key === 'home') {
             navigation.navigate('ParentDashboard');
         } else if (tab.key === 'profile') {
-            navigation.navigate('Profile'); // ← ATUALIZADO
+            navigation.navigate('Profile');
         } else if (tab.key === 'status') {
             navigation.navigate('Status');
         } else if (tab.key === 'search') {
@@ -65,7 +70,7 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
                         ]}>
                             <Ionicons
                                 name={tab.icon}
-                                size={24}
+                                size={moderateScale(20)}
                                 color={activeTab === tab.key ? '#ffd700' : 'rgba(255, 255, 255, 0.7)'}
                             />
                         </View>
@@ -100,7 +105,7 @@ const FavoriteBookCard = ({ book, onPress, onRemove, isChildBook }) => (
                     ]}>
                         <Ionicons
                             name="book"
-                            size={24}
+                            size={moderateScale(20)}
                             color={isChildBook ? "#4a90e2" : "#ffd700"}
                         />
                     </View>
@@ -114,19 +119,19 @@ const FavoriteBookCard = ({ book, onPress, onRemove, isChildBook }) => (
                     style={styles.removeButton}
                     onPress={onRemove}
                 >
-                    <Ionicons name="heart" size={20} color="#ff4444" />
+                    <Ionicons name="heart" size={moderateScale(18)} color="#ff4444" />
                 </TouchableOpacity>
             </View>
 
             <View style={styles.bookInfo}>
-                <Text style={styles.bookTitle}>{book.title}</Text>
-                <Text style={styles.bookAuthor}>{book.author}</Text>
+                <Text style={styles.bookTitle} numberOfLines={2}>{book.title}</Text>
+                <Text style={styles.bookAuthor} numberOfLines={1}>{book.author}</Text>
                 <View style={styles.bookMeta}>
                     <Text style={styles.bookChapters}>{book.chapters}</Text>
                     <Text style={styles.bookAge}>{book.ageRange}</Text>
                 </View>
                 {book.lastRead && (
-                    <Text style={styles.lastRead}>
+                    <Text style={styles.lastRead} numberOfLines={1}>
                         Última leitura: {book.lastRead}
                     </Text>
                 )}
@@ -167,7 +172,6 @@ export default function FavoritesScreen({ navigation }) {
 
     // Dados simulados dos livros favoritos
     useEffect(() => {
-        // Simulando carregamento de dados
         const loadFavoriteBooks = () => {
             const childBooks = [
                 {
@@ -247,7 +251,6 @@ export default function FavoritesScreen({ navigation }) {
     }, []);
 
     const handleBookPress = (book) => {
-        // Navegar para a tela de leitura
         console.log('Abrir livro favorito:', book.title);
         Alert.alert('Abrir Livro', `Abrir "${book.title}"?`);
     };
@@ -262,7 +265,6 @@ export default function FavoritesScreen({ navigation }) {
                     text: 'Remover',
                     style: 'destructive',
                     onPress: () => {
-                        // Remover o livro dos favoritos
                         const updatedBooks = {
                             childBooks: favoriteBooks.childBooks.filter(b => b.id !== book.id),
                             adultBooks: favoriteBooks.adultBooks.filter(b => b.id !== book.id),
@@ -305,14 +307,14 @@ export default function FavoritesScreen({ navigation }) {
                 {/* Header */}
                 <View style={styles.header}>
                     <View style={styles.headerTop}>
-                        <View>
+                        <View style={styles.headerTextContainer}>
                             <Text style={styles.welcomeText}>Seus Favoritos</Text>
                             <Text style={styles.subtitle}>
                                 Livros selecionados para você e suas crianças
                             </Text>
                         </View>
                         <TouchableOpacity style={styles.filterButton}>
-                            <Ionicons name="filter" size={20} color="#ffd700" />
+                            <Ionicons name="filter" size={moderateScale(18)} color="#ffd700" />
                         </TouchableOpacity>
                     </View>
 
@@ -362,7 +364,7 @@ export default function FavoritesScreen({ navigation }) {
                 {/* Mensagem quando não há favoritos */}
                 {stats.totalBooks === 0 && (
                     <View style={styles.emptyState}>
-                        <Ionicons name="heart-outline" size={64} color="rgba(255, 255, 255, 0.3)" />
+                        <Ionicons name="heart-outline" size={moderateScale(60)} color="rgba(255, 255, 255, 0.3)" />
                         <Text style={styles.emptyStateTitle}>Nenhum favorito ainda</Text>
                         <Text style={styles.emptyStateText}>
                             Comece a adicionar livros aos favoritos para vê-los aqui!
@@ -405,79 +407,83 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     scrollContent: {
-        paddingBottom: 90,
+        paddingBottom: responsiveHeight(12),
     },
     header: {
-        paddingHorizontal: 20,
-        paddingTop: 60,
-        paddingBottom: 20,
+        paddingHorizontal: responsiveWidth(5),
+        paddingTop: responsiveHeight(8),
+        paddingBottom: responsiveHeight(2),
     },
     headerTop: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
-        marginBottom: 25,
+        marginBottom: responsiveHeight(3),
+    },
+    headerTextContainer: {
+        flex: 1,
+        marginRight: responsiveWidth(3),
     },
     welcomeText: {
-        fontSize: 28,
+        fontSize: moderateScale(26),
         fontWeight: 'bold',
         color: '#ffd700',
-        marginBottom: 8,
+        marginBottom: responsiveHeight(1),
     },
     subtitle: {
-        fontSize: 16,
+        fontSize: moderateScale(14),
         color: 'rgba(255, 255, 255, 0.8)',
-        lineHeight: 22,
+        lineHeight: moderateScale(20),
     },
     filterButton: {
-        padding: 8,
-        borderRadius: 20,
+        padding: moderateScale(8),
+        borderRadius: moderateScale(20),
         backgroundColor: 'rgba(255, 215, 0, 0.1)',
     },
     statsContainer: {
         flexDirection: 'row',
         justifyContent: 'space-around',
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        borderRadius: 15,
-        padding: 20,
+        borderRadius: moderateScale(15),
+        padding: responsiveHeight(2),
     },
     statItem: {
         alignItems: 'center',
     },
     statNumber: {
-        fontSize: 24,
+        fontSize: moderateScale(22),
         fontWeight: 'bold',
         color: '#ffd700',
-        marginBottom: 4,
+        marginBottom: responsiveHeight(0.5),
     },
     statLabel: {
-        fontSize: 12,
+        fontSize: moderateScale(11),
         color: 'rgba(255, 255, 255, 0.7)',
         fontWeight: '500',
     },
     categorySection: {
-        marginBottom: 30,
-        paddingHorizontal: 20,
+        marginBottom: responsiveHeight(3),
+        paddingHorizontal: responsiveWidth(5),
     },
     categoryTitle: {
-        fontSize: 20,
+        fontSize: moderateScale(18),
         fontWeight: 'bold',
         color: '#ffd700',
-        marginBottom: 15,
+        marginBottom: responsiveHeight(2),
     },
     booksList: {
-        paddingRight: 20,
+        paddingRight: responsiveWidth(5),
     },
     bookCard: {
-        width: 180,
-        marginRight: 15,
-        borderRadius: 15,
+        width: responsiveWidth(45),
+        marginRight: responsiveWidth(3),
+        borderRadius: moderateScale(15),
         overflow: 'hidden',
     },
     bookGradient: {
-        padding: 15,
-        borderRadius: 15,
-        height: 200,
+        padding: moderateScale(12),
+        borderRadius: moderateScale(15),
+        height: responsiveHeight(20),
         justifyContent: 'space-between',
     },
     bookHeader: {
@@ -489,30 +495,30 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
     },
     bookIcon: {
-        width: 40,
-        height: 40,
-        borderRadius: 10,
+        width: moderateScale(36),
+        height: moderateScale(36),
+        borderRadius: moderateScale(8),
         backgroundColor: 'rgba(255, 215, 0, 0.1)',
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 8,
+        marginBottom: moderateScale(6),
     },
     childBookIcon: {
         backgroundColor: 'rgba(74, 144, 226, 0.1)',
     },
     bookTypeBadge: {
         backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-        borderRadius: 8,
+        paddingHorizontal: moderateScale(6),
+        paddingVertical: moderateScale(2),
+        borderRadius: moderateScale(6),
     },
     bookTypeText: {
         color: '#fff',
-        fontSize: 10,
+        fontSize: moderateScale(9),
         fontWeight: 'bold',
     },
     removeButton: {
-        padding: 4,
+        padding: moderateScale(4),
     },
     bookInfo: {
         flex: 1,
@@ -520,69 +526,69 @@ const styles = StyleSheet.create({
     },
     bookTitle: {
         color: '#fff',
-        fontSize: 14,
+        fontSize: moderateScale(13),
         fontWeight: 'bold',
-        marginBottom: 4,
-        lineHeight: 18,
+        marginBottom: moderateScale(3),
+        lineHeight: moderateScale(16),
     },
     bookAuthor: {
         color: 'rgba(255, 255, 255, 0.8)',
-        fontSize: 12,
-        marginBottom: 6,
+        fontSize: moderateScale(11),
+        marginBottom: moderateScale(5),
     },
     bookMeta: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 4,
+        marginBottom: moderateScale(3),
     },
     bookChapters: {
         color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: 11,
+        fontSize: moderateScale(10),
         fontWeight: '500',
     },
     bookAge: {
         color: 'rgba(255, 255, 255, 0.6)',
-        fontSize: 10,
+        fontSize: moderateScale(9),
     },
     lastRead: {
         color: 'rgba(255, 255, 255, 0.5)',
-        fontSize: 10,
+        fontSize: moderateScale(9),
         fontStyle: 'italic',
     },
     emptyState: {
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 60,
-        paddingHorizontal: 40,
+        paddingVertical: responsiveHeight(8),
+        paddingHorizontal: responsiveWidth(10),
     },
     emptyStateTitle: {
-        fontSize: 20,
+        fontSize: moderateScale(18),
         fontWeight: 'bold',
         color: '#ffd700',
-        marginTop: 20,
-        marginBottom: 10,
+        marginTop: responsiveHeight(2),
+        marginBottom: responsiveHeight(1),
         textAlign: 'center',
     },
     emptyStateText: {
-        fontSize: 14,
+        fontSize: moderateScale(13),
         color: 'rgba(255, 255, 255, 0.7)',
         textAlign: 'center',
-        lineHeight: 20,
-        marginBottom: 25,
+        lineHeight: moderateScale(18),
+        marginBottom: responsiveHeight(3),
     },
     exploreButton: {
         backgroundColor: '#ffd700',
-        paddingHorizontal: 25,
-        paddingVertical: 12,
-        borderRadius: 25,
+        paddingHorizontal: responsiveWidth(6),
+        paddingVertical: responsiveHeight(1.5),
+        borderRadius: moderateScale(25),
     },
     exploreButtonText: {
         color: '#0f0820',
-        fontSize: 16,
+        fontSize: moderateScale(14),
         fontWeight: 'bold',
     },
     bottomSpacer: {
-        height: 30,
+        height: responsiveHeight(4),
     },
     // Menu Inferior
     bottomTabBar: {
@@ -590,9 +596,9 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        height: 100,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
+        height: responsiveHeight(12),
+        borderTopLeftRadius: moderateScale(20),
+        borderTopRightRadius: moderateScale(20),
         overflow: 'hidden',
     },
     tabBarGradient: {
@@ -600,9 +606,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-around',
-        paddingHorizontal: 10,
-        paddingTop: 10,
-        paddingBottom: 25,
+        paddingHorizontal: responsiveWidth(2),
+        paddingTop: responsiveHeight(1),
+        paddingBottom: responsiveHeight(3),
     },
     bottomTabItem: {
         alignItems: 'center',
@@ -610,19 +616,19 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     tabIconContainer: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: moderateScale(36),
+        height: moderateScale(36),
+        borderRadius: moderateScale(18),
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 4,
+        marginBottom: moderateScale(3),
     },
     tabIconContainerActive: {
         backgroundColor: 'rgba(255, 215, 0, 0.15)',
     },
     bottomTabLabel: {
         color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: 12,
+        fontSize: moderateScale(10),
         fontWeight: '500',
     },
     bottomTabLabelActive: {

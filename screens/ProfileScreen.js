@@ -14,6 +14,11 @@ import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 
+// Funções auxiliares para responsividade
+const responsiveWidth = (percentage) => width * (percentage / 100);
+const responsiveHeight = (percentage) => height * (percentage / 100);
+const moderateScale = (size, factor = 0.5) => size + (responsiveWidth(size) - size) * factor;
+
 // Componente de Menu Inferior
 const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
     const tabs = [
@@ -64,7 +69,7 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
                         ]}>
                             <Ionicons
                                 name={tab.icon}
-                                size={24}
+                                size={moderateScale(20)}
                                 color={activeTab === tab.key ? '#ffd700' : 'rgba(255, 255, 255, 0.7)'}
                             />
                         </View>
@@ -132,17 +137,17 @@ export default function ProfileScreen({ navigation }) {
                 <View style={styles.header}>
                     <View style={styles.profileImageContainer}>
                         <View style={styles.profileImage}>
-                            <Ionicons name="person" size={60} color="#ffd700" />
+                            <Ionicons name="person" size={moderateScale(50)} color="#ffd700" />
                         </View>
                         <TouchableOpacity style={styles.editImageButton}>
-                            <Ionicons name="camera" size={16} color="#fff" />
+                            <Ionicons name="camera" size={moderateScale(14)} color="#fff" />
                         </TouchableOpacity>
                     </View>
 
                     <Text style={styles.profileName}>{profileData.name}</Text>
                     <Text style={styles.profileProfession}>{profileData.profession}</Text>
                     <View style={styles.locationContainer}>
-                        <Ionicons name="location" size={16} color="#ffd700" />
+                        <Ionicons name="location" size={moderateScale(14)} color="#ffd700" />
                         <Text style={styles.locationText}>{profileData.location}</Text>
                     </View>
                 </View>
@@ -191,7 +196,7 @@ export default function ProfileScreen({ navigation }) {
                                 {[1, 2, 3, 4, 5, 6].map((item) => (
                                     <View key={item} style={styles.portfolioItem}>
                                         <View style={styles.portfolioImage}>
-                                            <Ionicons name="image" size={30} color="rgba(255, 255, 255, 0.5)" />
+                                            <Ionicons name="image" size={moderateScale(25)} color="rgba(255, 255, 255, 0.5)" />
                                         </View>
                                     </View>
                                 ))}
@@ -232,7 +237,7 @@ export default function ProfileScreen({ navigation }) {
                             <View style={styles.servicesList}>
                                 <View style={styles.serviceItem}>
                                     <View style={styles.serviceIcon}>
-                                        <Ionicons name="desktop" size={24} color="#ffd700" />
+                                        <Ionicons name="desktop" size={moderateScale(20)} color="#ffd700" />
                                     </View>
                                     <View style={styles.serviceInfo}>
                                         <Text style={styles.serviceTitle}>Web Design</Text>
@@ -243,7 +248,7 @@ export default function ProfileScreen({ navigation }) {
                                 </View>
                                 <View style={styles.serviceItem}>
                                     <View style={styles.serviceIcon}>
-                                        <Ionicons name="phone-portrait" size={24} color="#ffd700" />
+                                        <Ionicons name="phone-portrait" size={moderateScale(20)} color="#ffd700" />
                                     </View>
                                     <View style={styles.serviceInfo}>
                                         <Text style={styles.serviceTitle}>Mobile Design</Text>
@@ -254,7 +259,7 @@ export default function ProfileScreen({ navigation }) {
                                 </View>
                                 <View style={styles.serviceItem}>
                                     <View style={styles.serviceIcon}>
-                                        <Ionicons name="color-palette" size={24} color="#ffd700" />
+                                        <Ionicons name="color-palette" size={moderateScale(20)} color="#ffd700" />
                                     </View>
                                     <View style={styles.serviceInfo}>
                                         <Text style={styles.serviceTitle}>UI/UX Design</Text>
@@ -297,50 +302,50 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     scrollContent: {
-        paddingBottom: 90,
+        paddingBottom: responsiveHeight(12),
     },
     header: {
         alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingTop: 60,
-        paddingBottom: 20,
+        paddingHorizontal: responsiveWidth(5),
+        paddingTop: responsiveHeight(8),
+        paddingBottom: responsiveHeight(2),
     },
     profileImageContainer: {
         position: 'relative',
-        marginBottom: 20,
+        marginBottom: responsiveHeight(2),
     },
     profileImage: {
-        width: 120,
-        height: 120,
-        borderRadius: 60,
+        width: responsiveWidth(30),
+        height: responsiveWidth(30),
+        borderRadius: responsiveWidth(15),
         backgroundColor: 'rgba(255, 215, 0, 0.1)',
         justifyContent: 'center',
         alignItems: 'center',
-        borderWidth: 3,
+        borderWidth: moderateScale(3),
         borderColor: '#ffd700',
     },
     editImageButton: {
         position: 'absolute',
-        bottom: 5,
-        right: 5,
-        width: 32,
-        height: 32,
-        borderRadius: 16,
+        bottom: moderateScale(5),
+        right: moderateScale(5),
+        width: moderateScale(28),
+        height: moderateScale(28),
+        borderRadius: moderateScale(14),
         backgroundColor: '#ffd700',
         justifyContent: 'center',
         alignItems: 'center',
     },
     profileName: {
-        fontSize: 28,
+        fontSize: moderateScale(24),
         fontWeight: 'bold',
         color: '#ffd700',
-        marginBottom: 5,
+        marginBottom: responsiveHeight(0.5),
         textAlign: 'center',
     },
     profileProfession: {
-        fontSize: 18,
+        fontSize: moderateScale(16),
         color: 'rgba(255, 255, 255, 0.9)',
-        marginBottom: 8,
+        marginBottom: responsiveHeight(1),
         textAlign: 'center',
     },
     locationContainer: {
@@ -349,67 +354,67 @@ const styles = StyleSheet.create({
     },
     locationText: {
         color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: 14,
-        marginLeft: 5,
+        fontSize: moderateScale(12),
+        marginLeft: moderateScale(5),
     },
     statsContainer: {
         flexDirection: 'row',
         justifyContent: 'space-around',
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        marginHorizontal: 20,
-        borderRadius: 15,
-        paddingVertical: 20,
-        marginBottom: 20,
+        marginHorizontal: responsiveWidth(5),
+        borderRadius: moderateScale(15),
+        paddingVertical: responsiveHeight(2),
+        marginBottom: responsiveHeight(2),
     },
     statItem: {
         alignItems: 'center',
         flex: 1,
     },
     statNumber: {
-        fontSize: 20,
+        fontSize: moderateScale(18),
         fontWeight: 'bold',
         color: '#ffd700',
-        marginBottom: 4,
+        marginBottom: responsiveHeight(0.5),
     },
     statLabel: {
-        fontSize: 12,
+        fontSize: moderateScale(10),
         color: 'rgba(255, 255, 255, 0.7)',
         fontWeight: '500',
         textTransform: 'uppercase',
     },
     statDivider: {
-        width: 1,
+        width: moderateScale(1),
         height: '80%',
         backgroundColor: 'rgba(255, 255, 255, 0.2)',
         alignSelf: 'center',
     },
     editProfileButton: {
         backgroundColor: 'rgba(255, 215, 0, 0.1)',
-        borderWidth: 1,
+        borderWidth: moderateScale(1),
         borderColor: '#ffd700',
-        paddingHorizontal: 30,
-        paddingVertical: 12,
-        borderRadius: 25,
+        paddingHorizontal: responsiveWidth(8),
+        paddingVertical: responsiveHeight(1.2),
+        borderRadius: moderateScale(25),
         alignSelf: 'center',
-        marginBottom: 25,
+        marginBottom: responsiveHeight(3),
     },
     editProfileButtonText: {
         color: '#ffd700',
-        fontSize: 16,
+        fontSize: moderateScale(14),
         fontWeight: 'bold',
     },
     tabsContainer: {
         flexDirection: 'row',
-        paddingHorizontal: 20,
-        marginBottom: 20,
-        borderBottomWidth: 1,
+        paddingHorizontal: responsiveWidth(5),
+        marginBottom: responsiveHeight(2),
+        borderBottomWidth: moderateScale(1),
         borderBottomColor: 'rgba(255, 255, 255, 0.1)',
     },
     tabButton: {
         flex: 1,
-        paddingVertical: 15,
+        paddingVertical: responsiveHeight(1.5),
         alignItems: 'center',
-        borderBottomWidth: 2,
+        borderBottomWidth: moderateScale(2),
         borderBottomColor: 'transparent',
     },
     tabButtonActive: {
@@ -417,7 +422,7 @@ const styles = StyleSheet.create({
     },
     tabButtonText: {
         color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: 16,
+        fontSize: moderateScale(14),
         fontWeight: '500',
         textTransform: 'capitalize',
     },
@@ -426,13 +431,13 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     tabContent: {
-        paddingHorizontal: 20,
+        paddingHorizontal: responsiveWidth(5),
     },
     sectionTitle: {
-        fontSize: 22,
+        fontSize: moderateScale(20),
         fontWeight: 'bold',
         color: '#ffd700',
-        marginBottom: 15,
+        marginBottom: responsiveHeight(2),
     },
     // Estilos para Portfolio
     portfolioGrid: {
@@ -443,33 +448,33 @@ const styles = StyleSheet.create({
     portfolioItem: {
         width: '48%',
         aspectRatio: 1,
-        marginBottom: 15,
+        marginBottom: responsiveHeight(2),
     },
     portfolioImage: {
         flex: 1,
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        borderRadius: 10,
+        borderRadius: moderateScale(10),
         justifyContent: 'center',
         alignItems: 'center',
-        borderWidth: 1,
+        borderWidth: moderateScale(1),
         borderColor: 'rgba(255, 255, 255, 0.2)',
     },
     // Estilos para About
     aboutText: {
         color: 'rgba(255, 255, 255, 0.8)',
-        fontSize: 16,
-        lineHeight: 24,
-        marginBottom: 20,
+        fontSize: moderateScale(14),
+        lineHeight: moderateScale(22),
+        marginBottom: responsiveHeight(2),
         textAlign: 'center',
     },
     skillsContainer: {
-        marginTop: 10,
+        marginTop: responsiveHeight(1),
     },
     skillsTitle: {
-        fontSize: 18,
+        fontSize: moderateScale(16),
         fontWeight: 'bold',
         color: '#ffd700',
-        marginBottom: 15,
+        marginBottom: responsiveHeight(2),
         textAlign: 'center',
     },
     skillsList: {
@@ -479,55 +484,55 @@ const styles = StyleSheet.create({
     },
     skillTag: {
         backgroundColor: 'rgba(255, 215, 0, 0.1)',
-        paddingHorizontal: 15,
-        paddingVertical: 8,
-        borderRadius: 20,
-        margin: 5,
-        borderWidth: 1,
+        paddingHorizontal: responsiveWidth(3),
+        paddingVertical: responsiveHeight(0.8),
+        borderRadius: moderateScale(20),
+        margin: moderateScale(4),
+        borderWidth: moderateScale(1),
         borderColor: 'rgba(255, 215, 0, 0.3)',
     },
     skillText: {
         color: '#ffd700',
-        fontSize: 14,
+        fontSize: moderateScale(12),
         fontWeight: '500',
     },
     // Estilos para Services
     servicesList: {
-        marginTop: 10,
+        marginTop: responsiveHeight(1),
     },
     serviceItem: {
         flexDirection: 'row',
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        borderRadius: 15,
-        padding: 20,
-        marginBottom: 15,
+        borderRadius: moderateScale(15),
+        padding: responsiveHeight(2),
+        marginBottom: responsiveHeight(2),
         alignItems: 'center',
     },
     serviceIcon: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
+        width: moderateScale(45),
+        height: moderateScale(45),
+        borderRadius: moderateScale(22.5),
         backgroundColor: 'rgba(255, 215, 0, 0.1)',
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 15,
+        marginRight: responsiveWidth(3),
     },
     serviceInfo: {
         flex: 1,
     },
     serviceTitle: {
-        fontSize: 18,
+        fontSize: moderateScale(16),
         fontWeight: 'bold',
         color: '#fff',
-        marginBottom: 5,
+        marginBottom: responsiveHeight(0.5),
     },
     serviceDescription: {
-        fontSize: 14,
+        fontSize: moderateScale(12),
         color: 'rgba(255, 255, 255, 0.7)',
-        lineHeight: 20,
+        lineHeight: moderateScale(18),
     },
     bottomSpacer: {
-        height: 30,
+        height: responsiveHeight(4),
     },
     // Menu Inferior
     bottomTabBar: {
@@ -535,9 +540,9 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        height: 100,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
+        height: responsiveHeight(12),
+        borderTopLeftRadius: moderateScale(20),
+        borderTopRightRadius: moderateScale(20),
         overflow: 'hidden',
     },
     tabBarGradient: {
@@ -545,9 +550,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-around',
-        paddingHorizontal: 10,
-        paddingTop: 10,
-        paddingBottom: 25,
+        paddingHorizontal: responsiveWidth(2),
+        paddingTop: responsiveHeight(1),
+        paddingBottom: responsiveHeight(3),
     },
     bottomTabItem: {
         alignItems: 'center',
@@ -555,19 +560,19 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     tabIconContainer: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: moderateScale(36),
+        height: moderateScale(36),
+        borderRadius: moderateScale(18),
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 4,
+        marginBottom: moderateScale(3),
     },
     tabIconContainerActive: {
         backgroundColor: 'rgba(255, 215, 0, 0.15)',
     },
     bottomTabLabel: {
         color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: 12,
+        fontSize: moderateScale(10),
         fontWeight: '500',
     },
     bottomTabLabelActive: {
