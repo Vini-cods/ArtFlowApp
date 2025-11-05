@@ -16,7 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 
-// Componente de Menu Superior (igual ao ParentDashboard)
+// Componente de Menu Superior
 const TopNavigation = ({ activeTab, onTabChange }) => {
     const tabs = [
         { key: 'all', label: 'All' },
@@ -57,7 +57,7 @@ const TopNavigation = ({ activeTab, onTabChange }) => {
     );
 };
 
-// Componente de Menu Inferior (atualizado com perfil)
+// Componente de Menu Inferior (COM ícone de perfil)
 const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
     const tabs = [
         { key: 'home', icon: 'home', label: 'Início' },
@@ -72,13 +72,12 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
         if (tab.key === 'home') {
             navigation.navigate('ParentDashboard');
         } else if (tab.key === 'profile') {
-            navigation.navigate('Profile'); // ← ATUALIZADO
+            navigation.navigate('Profile');
         } else if (tab.key === 'status') {
             navigation.navigate('Status');
         } else if (tab.key === 'favorites') {
             navigation.navigate('Library');
         }
-        // Buscar já está na StoriesScreen, não faz nada
     };
 
     return (
@@ -104,7 +103,7 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
                         ]}>
                             <Ionicons
                                 name={tab.icon}
-                                size={24}
+                                size={width * 0.06}
                                 color={activeTab === tab.key ? '#ffd700' : 'rgba(255, 255, 255, 0.7)'}
                             />
                         </View>
@@ -127,11 +126,11 @@ export default function StoriesScreen({ navigation, route }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [activeTopTab, setActiveTopTab] = useState('all');
-    const [activeBottomTab, setActiveBottomTab] = useState('search'); // Agora padrão é 'search'
+    const [activeBottomTab, setActiveBottomTab] = useState('search');
     const [loading, setLoading] = useState(true);
     const [isSearchFocused, setIsSearchFocused] = useState(false);
 
-    // Categorias disponíveis (para filtro interno)
+    // Categorias disponíveis
     const categories = [
         { id: 'all', name: 'Todas', icon: 'apps' },
         { id: 'adventure', name: 'Aventura', icon: 'trail-sign' },
@@ -165,11 +164,53 @@ export default function StoriesScreen({ navigation, route }) {
             isFavorite: false,
             rating: 4.5
         },
-        // ... outros dados mantidos iguais
+        {
+            id: 3,
+            title: 'Os Animais da Fazenda',
+            author: 'Ana Oliveira',
+            duration: 6,
+            category: 'animals',
+            ageRange: '3-6 anos',
+            description: 'Aprenda sobre os animais da fazenda e seus sons divertidos.',
+            isFavorite: true,
+            rating: 4.7
+        },
+        {
+            id: 4,
+            title: 'Viagem ao Espaço',
+            author: 'Pedro Santos',
+            duration: 12,
+            category: 'educational',
+            ageRange: '7-12 anos',
+            description: 'Uma aventura educativa pelo sistema solar e além.',
+            isFavorite: false,
+            rating: 4.9
+        },
+        {
+            id: 5,
+            title: 'A Hora de Dormir',
+            author: 'Maria Costa',
+            duration: 5,
+            category: 'bedtime',
+            ageRange: '2-5 anos',
+            description: 'Uma história calmante para ajudar as crianças a pegar no sono.',
+            isFavorite: true,
+            rating: 4.6
+        },
+        {
+            id: 6,
+            title: 'O Dragão Amigável',
+            author: 'Lucas Fernandes',
+            duration: 9,
+            category: 'fantasy',
+            ageRange: '5-9 anos',
+            description: 'A história de um dragão que só queria fazer amigos.',
+            isFavorite: false,
+            rating: 4.8
+        }
     ];
 
     useEffect(() => {
-        // Verificar se há parâmetros de busca
         if (route.params?.searchQuery) {
             setSearchQuery(route.params.searchQuery);
         }
@@ -178,12 +219,10 @@ export default function StoriesScreen({ navigation, route }) {
             setSelectedCategory(route.params.category);
         }
 
-        // Focar na busca se veio da navegação de busca
         if (route.params?.fromSearch) {
             setIsSearchFocused(true);
         }
 
-        // Simular carregamento de dados
         setTimeout(() => {
             setStories(mockStories);
             setFilteredStories(mockStories);
@@ -198,12 +237,10 @@ export default function StoriesScreen({ navigation, route }) {
     const filterStories = () => {
         let filtered = [...stories];
 
-        // Filtrar por categoria
         if (selectedCategory !== 'all') {
             filtered = filtered.filter(story => story.category === selectedCategory);
         }
 
-        // Filtrar por busca
         if (searchQuery.trim() !== '') {
             const query = searchQuery.toLowerCase();
             filtered = filtered.filter(story =>
@@ -226,7 +263,6 @@ export default function StoriesScreen({ navigation, route }) {
                     text: 'Começar',
                     onPress: () => {
                         Alert.alert('Sucesso', `Iniciando leitura de "${story.title}"!`);
-                        // Aqui você pode navegar para a tela de leitura
                     }
                 }
             ]
@@ -244,7 +280,6 @@ export default function StoriesScreen({ navigation, route }) {
 
     const clearSearch = () => {
         setSearchQuery('');
-        // Limpar também os parâmetros da rota se existirem
         if (route.params) {
             navigation.setParams({ searchQuery: '', category: 'all' });
         }
@@ -260,10 +295,6 @@ export default function StoriesScreen({ navigation, route }) {
         setIsSearchFocused(true);
     };
 
-    const handleProfilePress = () => {
-        navigation.navigate('Profile'); // ← ADICIONADO
-    };
-
     const renderStoryItem = ({ item }) => (
         <TouchableOpacity
             style={styles.storyCard}
@@ -275,7 +306,6 @@ export default function StoriesScreen({ navigation, route }) {
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
             >
-                {/* Header do Card */}
                 <View style={styles.storyHeader}>
                     <View style={styles.storyMeta}>
                         <Text style={styles.storyDuration}>⏱️ {item.duration}m</Text>
@@ -287,16 +317,15 @@ export default function StoriesScreen({ navigation, route }) {
                     >
                         <Ionicons
                             name={item.isFavorite ? 'heart' : 'heart-outline'}
-                            size={24}
+                            size={width * 0.06}
                             color={item.isFavorite ? '#ff6b6b' : 'rgba(255, 255, 255, 0.6)'}
                         />
                     </TouchableOpacity>
                 </View>
 
-                {/* Conteúdo Principal */}
                 <View style={styles.storyContent}>
                     <View style={styles.storyIcon}>
-                        <Ionicons name="book" size={40} color="#ffd700" />
+                        <Ionicons name="book" size={width * 0.1} color="#ffd700" />
                     </View>
                     <View style={styles.storyInfo}>
                         <Text style={styles.storyTitle} numberOfLines={2}>{item.title}</Text>
@@ -307,10 +336,9 @@ export default function StoriesScreen({ navigation, route }) {
                     </View>
                 </View>
 
-                {/* Footer do Card */}
                 <View style={styles.storyFooter}>
                     <View style={styles.rating}>
-                        <Ionicons name="star" size={16} color="#ffd700" />
+                        <Ionicons name="star" size={width * 0.04} color="#ffd700" />
                         <Text style={styles.ratingText}>{item.rating}</Text>
                     </View>
                     <View style={styles.categoryTag}>
@@ -333,7 +361,7 @@ export default function StoriesScreen({ navigation, route }) {
         >
             <Ionicons
                 name={item.icon}
-                size={20}
+                size={width * 0.05}
                 color={selectedCategory === item.id ? '#0f0820' : '#ffd700'}
             />
             <Text style={[
@@ -362,7 +390,6 @@ export default function StoriesScreen({ navigation, route }) {
         <View style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="#0f0820" />
 
-            {/* Background Gradient */}
             <LinearGradient
                 colors={['#0f0820', '#1a0f3a', '#2d1554']}
                 style={styles.gradient}
@@ -375,21 +402,13 @@ export default function StoriesScreen({ navigation, route }) {
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
             >
-                {/* Header */}
                 <View style={styles.header}>
-                    <View>
+                    <View style={styles.headerContent}>
                         <Text style={styles.welcomeText}>Buscar Histórias</Text>
                         <Text style={styles.subtitle}>Encontre as melhores histórias para seus filhos</Text>
                     </View>
-                    <TouchableOpacity 
-                        style={styles.profileButton}
-                        onPress={handleProfilePress} // ← ATUALIZADO
-                    >
-                        <Ionicons name="person" size={24} color="#ffd700" />
-                    </TouchableOpacity>
                 </View>
 
-                {/* Barra de Pesquisa com foco automático */}
                 <View style={styles.searchContainer}>
                     <View style={[
                         styles.searchBar,
@@ -398,7 +417,7 @@ export default function StoriesScreen({ navigation, route }) {
                         <TouchableOpacity onPress={handleSearch}>
                             <Ionicons
                                 name="search"
-                                size={20}
+                                size={width * 0.05}
                                 color={isSearchFocused ? '#ffd700' : 'rgba(255, 255, 255, 0.6)'}
                             />
                         </TouchableOpacity>
@@ -416,16 +435,14 @@ export default function StoriesScreen({ navigation, route }) {
                         />
                         {searchQuery !== '' && (
                             <TouchableOpacity onPress={clearSearch}>
-                                <Ionicons name="close-circle" size={20} color="rgba(255, 255, 255, 0.6)" />
+                                <Ionicons name="close-circle" size={width * 0.05} color="rgba(255, 255, 255, 0.6)" />
                             </TouchableOpacity>
                         )}
                     </View>
                 </View>
 
-                {/* Navegação Superior */}
                 <TopNavigation activeTab={activeTopTab} onTabChange={setActiveTopTab} />
 
-                {/* Categorias (filtro interno) */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Categorias</Text>
                     <FlatList
@@ -438,7 +455,6 @@ export default function StoriesScreen({ navigation, route }) {
                     />
                 </View>
 
-                {/* Contador de Resultados */}
                 <View style={styles.resultsContainer}>
                     <Text style={styles.resultsText}>
                         {filteredStories.length} {filteredStories.length === 1 ? 'história encontrada' : 'histórias encontradas'}
@@ -447,7 +463,6 @@ export default function StoriesScreen({ navigation, route }) {
                     </Text>
                 </View>
 
-                {/* Lista de Histórias */}
                 <View style={styles.storiesContainer}>
                     {filteredStories.length > 0 ? (
                         <FlatList
@@ -459,7 +474,7 @@ export default function StoriesScreen({ navigation, route }) {
                         />
                     ) : (
                         <View style={styles.emptyState}>
-                            <Ionicons name="search" size={60} color="rgba(255, 255, 255, 0.3)" />
+                            <Ionicons name="search" size={width * 0.15} color="rgba(255, 255, 255, 0.3)" />
                             <Text style={styles.emptyStateTitle}>
                                 {searchQuery ? 'Nenhum resultado encontrado' : 'Explore nossas histórias'}
                             </Text>
@@ -473,11 +488,9 @@ export default function StoriesScreen({ navigation, route }) {
                     )}
                 </View>
 
-                {/* Espaço para o footer */}
                 <View style={styles.bottomSpacer} />
             </ScrollView>
 
-            {/* Menu Inferior (atualizado com favoritos) */}
             <BottomTabBar
                 activeTab={activeBottomTab}
                 onTabChange={setActiveBottomTab}
@@ -501,7 +514,7 @@ const styles = StyleSheet.create({
     },
     loadingText: {
         color: '#ffd700',
-        fontSize: 16,
+        fontSize: width * 0.04,
     },
     gradient: {
         position: 'absolute',
@@ -510,42 +523,35 @@ const styles = StyleSheet.create({
         top: 0,
         height: height,
     },
-    // Header
     header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingTop: 60,
-        paddingBottom: 15,
+        paddingHorizontal: width * 0.05,
+        paddingTop: height * 0.06,
+        paddingBottom: height * 0.02,
+    },
+    headerContent: {
+        alignItems: 'flex-start',
     },
     welcomeText: {
-        fontSize: 28,
+        fontSize: width * 0.07,
         fontWeight: 'bold',
         color: '#ffd700',
-        marginBottom: 5,
+        marginBottom: height * 0.005,
     },
     subtitle: {
-        fontSize: 16,
+        fontSize: width * 0.04,
         color: 'rgba(255, 255, 255, 0.8)',
     },
-    profileButton: {
-        padding: 10,
-        borderRadius: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    },
-    // Barra de Pesquisa
     searchContainer: {
-        paddingHorizontal: 20,
-        marginBottom: 20,
+        paddingHorizontal: width * 0.05,
+        marginBottom: height * 0.02,
     },
     searchBar: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        borderRadius: 15,
-        paddingHorizontal: 15,
-        paddingVertical: 12,
+        borderRadius: width * 0.04,
+        paddingHorizontal: width * 0.04,
+        paddingVertical: height * 0.015,
         borderWidth: 1,
         borderColor: 'rgba(255, 215, 0, 0.2)',
     },
@@ -556,31 +562,27 @@ const styles = StyleSheet.create({
     searchInput: {
         flex: 1,
         color: '#fff',
-        fontSize: 16,
-        marginLeft: 10,
-        marginRight: 10,
+        fontSize: width * 0.04,
+        marginLeft: width * 0.02,
+        marginRight: width * 0.02,
     },
-    // Navegação Superior
     topNavigation: {
-        marginBottom: 20,
+        marginBottom: height * 0.02,
         borderBottomWidth: 1,
         borderBottomColor: 'rgba(255, 255, 255, 0.1)',
     },
     navScrollContent: {
-        paddingHorizontal: 20,
+        paddingHorizontal: width * 0.05,
     },
     navItem: {
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        marginRight: 15,
+        paddingHorizontal: width * 0.04,
+        paddingVertical: height * 0.015,
+        marginRight: width * 0.04,
         position: 'relative',
-    },
-    navItemActive: {
-        // Estilo ativo sem background
     },
     navLabel: {
         color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: 16,
+        fontSize: width * 0.04,
         fontWeight: '500',
     },
     navLabelActive: {
@@ -600,30 +602,29 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     scrollContent: {
-        paddingBottom: 90, // Espaço para o footer
+        paddingBottom: height * 0.11,
     },
-    // Seções
     section: {
-        marginBottom: 20,
+        marginBottom: height * 0.03,
     },
     sectionTitle: {
-        fontSize: 20,
+        fontSize: width * 0.055,
         fontWeight: 'bold',
         color: '#ffd700',
-        marginBottom: 15,
-        paddingHorizontal: 20,
+        marginBottom: height * 0.02,
+        paddingHorizontal: width * 0.05,
     },
     categoriesList: {
-        paddingHorizontal: 15,
+        paddingHorizontal: width * 0.03,
     },
     categoryItem: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        paddingHorizontal: 15,
-        paddingVertical: 10,
-        borderRadius: 20,
-        marginHorizontal: 5,
+        paddingHorizontal: width * 0.04,
+        paddingVertical: height * 0.012,
+        borderRadius: width * 0.05,
+        marginHorizontal: width * 0.01,
         borderWidth: 1,
         borderColor: 'rgba(255, 215, 0, 0.3)',
     },
@@ -633,42 +634,42 @@ const styles = StyleSheet.create({
     },
     categoryText: {
         color: '#ffd700',
-        fontSize: 14,
+        fontSize: width * 0.035,
         fontWeight: '500',
-        marginLeft: 8,
+        marginLeft: width * 0.02,
     },
     categoryTextActive: {
         color: '#0f0820',
         fontWeight: 'bold',
     },
     resultsContainer: {
-        paddingHorizontal: 20,
-        marginBottom: 15,
+        paddingHorizontal: width * 0.05,
+        marginBottom: height * 0.02,
     },
     resultsText: {
         color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: 14,
+        fontSize: width * 0.035,
     },
     storiesContainer: {
         flex: 1,
     },
     storiesList: {
-        paddingHorizontal: 15,
+        paddingHorizontal: width * 0.03,
     },
     storyCard: {
-        marginBottom: 15,
-        borderRadius: 20,
+        marginBottom: height * 0.02,
+        borderRadius: width * 0.05,
         overflow: 'hidden',
     },
     storyGradient: {
-        padding: 20,
-        borderRadius: 20,
+        padding: width * 0.05,
+        borderRadius: width * 0.05,
     },
     storyHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 15,
+        marginBottom: height * 0.02,
     },
     storyMeta: {
         flexDirection: 'row',
@@ -677,58 +678,58 @@ const styles = StyleSheet.create({
     storyDuration: {
         backgroundColor: 'rgba(255, 215, 0, 0.2)',
         color: '#ffd700',
-        fontSize: 12,
+        fontSize: width * 0.03,
         fontWeight: '600',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 10,
-        marginRight: 8,
+        paddingHorizontal: width * 0.02,
+        paddingVertical: height * 0.005,
+        borderRadius: width * 0.03,
+        marginRight: width * 0.02,
     },
     storyAge: {
         backgroundColor: 'rgba(107, 47, 160, 0.3)',
         color: '#fff',
-        fontSize: 12,
+        fontSize: width * 0.03,
         fontWeight: '600',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 10,
+        paddingHorizontal: width * 0.02,
+        paddingVertical: height * 0.005,
+        borderRadius: width * 0.03,
     },
     favoriteButton: {
-        padding: 4,
+        padding: width * 0.01,
     },
     storyContent: {
         flexDirection: 'row',
         alignItems: 'flex-start',
-        marginBottom: 15,
+        marginBottom: height * 0.02,
     },
     storyIcon: {
-        width: 60,
-        height: 60,
-        borderRadius: 15,
+        width: width * 0.15,
+        height: width * 0.15,
+        borderRadius: width * 0.04,
         backgroundColor: 'rgba(255, 215, 0, 0.1)',
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 15,
+        marginRight: width * 0.04,
     },
     storyInfo: {
         flex: 1,
     },
     storyTitle: {
         color: '#fff',
-        fontSize: 18,
+        fontSize: width * 0.045,
         fontWeight: 'bold',
-        marginBottom: 5,
-        lineHeight: 22,
+        marginBottom: height * 0.008,
+        lineHeight: height * 0.025,
     },
     storyAuthor: {
         color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: 14,
-        marginBottom: 8,
+        fontSize: width * 0.035,
+        marginBottom: height * 0.01,
     },
     storyDescription: {
         color: 'rgba(255, 255, 255, 0.8)',
-        fontSize: 13,
-        lineHeight: 18,
+        fontSize: width * 0.033,
+        lineHeight: height * 0.022,
     },
     storyFooter: {
         flexDirection: 'row',
@@ -741,48 +742,47 @@ const styles = StyleSheet.create({
     },
     ratingText: {
         color: '#ffd700',
-        fontSize: 14,
+        fontSize: width * 0.035,
         fontWeight: '600',
-        marginLeft: 4,
+        marginLeft: width * 0.01,
     },
     categoryTag: {
         backgroundColor: 'rgba(107, 47, 160, 0.3)',
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        borderRadius: 10,
+        paddingHorizontal: width * 0.03,
+        paddingVertical: height * 0.006,
+        borderRadius: width * 0.03,
     },
     emptyState: {
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 60,
-        paddingHorizontal: 40,
+        paddingVertical: height * 0.08,
+        paddingHorizontal: width * 0.1,
     },
     emptyStateTitle: {
         color: '#ffd700',
-        fontSize: 20,
+        fontSize: width * 0.05,
         fontWeight: 'bold',
-        marginTop: 20,
-        marginBottom: 10,
+        marginTop: height * 0.03,
+        marginBottom: height * 0.015,
         textAlign: 'center',
     },
     emptyStateText: {
         color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: 16,
+        fontSize: width * 0.04,
         textAlign: 'center',
-        lineHeight: 22,
+        lineHeight: height * 0.025,
     },
     bottomSpacer: {
-        height: 30,
+        height: height * 0.03,
     },
-    // Menu Inferior
     bottomTabBar: {
         position: 'absolute',
         bottom: 0,
         left: 0,
         right: 0,
-        height: 80,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
+        height: height * 0.11,
+        borderTopLeftRadius: width * 0.05,
+        borderTopRightRadius: width * 0.05,
         overflow: 'hidden',
     },
     tabBarGradient: {
@@ -790,9 +790,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-around',
-        paddingHorizontal: 10,
-        paddingTop: 10,
-        paddingBottom: 25,
+        paddingHorizontal: width * 0.03,
+        paddingTop: height * 0.012,
+        paddingBottom: height * 0.03,
     },
     bottomTabItem: {
         alignItems: 'center',
@@ -800,19 +800,19 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     tabIconContainer: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: width * 0.1,
+        height: width * 0.1,
+        borderRadius: width * 0.05,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 4,
+        marginBottom: height * 0.005,
     },
     tabIconContainerActive: {
         backgroundColor: 'rgba(255, 215, 0, 0.15)',
     },
     bottomTabLabel: {
         color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: 12,
+        fontSize: width * 0.03,
         fontWeight: '500',
     },
     bottomTabLabelActive: {

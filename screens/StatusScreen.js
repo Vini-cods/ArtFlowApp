@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 
-// Componente de Menu Inferior (atualizado com favoritos)
+// Componente de Menu Inferior (COM ícone de perfil)
 const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
     const tabs = [
         { key: 'home', icon: 'home', label: 'Início' },
@@ -27,12 +27,12 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
         onTabChange(tab.key);
         if (tab.key === 'home') {
             navigation.navigate('ParentDashboard');
-        } else if (tab.key === 'profile') {
-            navigation.navigate('Profile'); // ← ATUALIZADO
         } else if (tab.key === 'search') {
             navigation.navigate('Stories', { searchQuery: '', category: 'all' });
         } else if (tab.key === 'favorites') {
             navigation.navigate('Library');
+        } else if (tab.key === 'profile') {
+            navigation.navigate('Profile');
         }
     };
 
@@ -59,7 +59,7 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
                         ]}>
                             <Ionicons
                                 name={tab.icon}
-                                size={24}
+                                size={width * 0.06}
                                 color={activeTab === tab.key ? '#ffd700' : 'rgba(255, 255, 255, 0.7)'}
                             />
                         </View>
@@ -87,7 +87,7 @@ const StatCard = ({ title, value, subtitle, icon, color, gradient }) => (
         >
             <View style={styles.statHeader}>
                 <View style={[styles.statIconContainer, { backgroundColor: color }]}>
-                    <Ionicons name={icon} size={24} color="#fff" />
+                    <Ionicons name={icon} size={width * 0.06} color="#fff" />
                 </View>
                 <Text style={styles.statValue}>{value}</Text>
             </View>
@@ -141,7 +141,6 @@ export default function StatusScreen({ navigation }) {
         <View style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="#0f0820" />
 
-            {/* Background Gradient */}
             <LinearGradient
                 colors={['#0f0820', '#1a0f3a', '#2d1554']}
                 style={styles.gradient}
@@ -154,21 +153,13 @@ export default function StatusScreen({ navigation }) {
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
             >
-                {/* Header */}
                 <View style={styles.header}>
-                    <View>
+                    <View style={styles.headerContent}>
                         <Text style={styles.welcomeText}>Status do Desenvolvimento</Text>
                         <Text style={styles.subtitle}>Acompanhe o progresso do seu filho</Text>
                     </View>
-                    <TouchableOpacity
-                        style={styles.profileButton}
-                        onPress={() => navigation.navigate('Profile')} // ← ATUALIZADO
-                    >
-                        <Ionicons name="person" size={24} color="#ffd700" />
-                    </TouchableOpacity>
                 </View>
 
-                {/* Estatísticas de Leitura */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}> Leitura</Text>
                     <View style={styles.statsGrid}>
@@ -207,7 +198,6 @@ export default function StatusScreen({ navigation }) {
                     </View>
                 </View>
 
-                {/* Estatísticas de Desenho */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}> Desenho</Text>
                     <View style={styles.statsGrid}>
@@ -246,7 +236,6 @@ export default function StatusScreen({ navigation }) {
                     </View>
                 </View>
 
-                {/* Progresso Geral */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}> Progresso Geral</Text>
                     <View style={styles.progressSection}>
@@ -273,34 +262,33 @@ export default function StatusScreen({ navigation }) {
                     </View>
                 </View>
 
-                {/* Conquistas */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}> Conquistas</Text>
                     <View style={styles.achievementsGrid}>
                         <View style={styles.achievementCard}>
                             <View style={styles.achievementIcon}>
-                                <Ionicons name="trophy" size={30} color="#ffd700" />
+                                <Ionicons name="trophy" size={width * 0.08} color="#ffd700" />
                             </View>
                             <Text style={styles.achievementTitle}>Leitor Iniciante</Text>
                             <Text style={styles.achievementDesc}>5 livros lidos</Text>
                         </View>
                         <View style={styles.achievementCard}>
                             <View style={styles.achievementIcon}>
-                                <Ionicons name="color-palette" size={30} color="#6b2fa0" />
+                                <Ionicons name="color-palette" size={width * 0.08} color="#6b2fa0" />
                             </View>
                             <Text style={styles.achievementTitle}>Artista Júnior</Text>
                             <Text style={styles.achievementDesc}>10 desenhos criados</Text>
                         </View>
                         <View style={styles.achievementCard}>
                             <View style={styles.achievementIcon}>
-                                <Ionicons name="flame" size={30} color="#ff6b6b" />
+                                <Ionicons name="flame" size={width * 0.08} color="#ff6b6b" />
                             </View>
                             <Text style={styles.achievementTitle}>Sequência de 7 Dias</Text>
                             <Text style={styles.achievementDesc}>Uma semana lendo</Text>
                         </View>
                         <View style={styles.achievementCard}>
                             <View style={styles.achievementIcon}>
-                                <Ionicons name="star" size={30} color="#4caf50" />
+                                <Ionicons name="star" size={width * 0.08} color="#4caf50" />
                             </View>
                             <Text style={styles.achievementTitle}>Explorador</Text>
                             <Text style={styles.achievementDesc}>3 gêneros diferentes</Text>
@@ -308,11 +296,9 @@ export default function StatusScreen({ navigation }) {
                     </View>
                 </View>
 
-                {/* Espaço para o menu inferior */}
                 <View style={styles.bottomSpacer} />
             </ScrollView>
 
-            {/* Menu Inferior */}
             <BottomTabBar
                 activeTab={activeBottomTab}
                 onTabChange={setActiveBottomTab}
@@ -337,40 +323,35 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     scrollContent: {
-        paddingBottom: 90,
+        paddingBottom: height * 0.11,
     },
     header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingTop: 60,
-        paddingBottom: 20,
+        paddingHorizontal: width * 0.05,
+        paddingTop: height * 0.06,
+        paddingBottom: height * 0.03,
+    },
+    headerContent: {
+        alignItems: 'flex-start',
     },
     welcomeText: {
-        fontSize: 28,
+        fontSize: width * 0.07,
         fontWeight: 'bold',
         color: '#ffd700',
-        marginBottom: 5,
+        marginBottom: height * 0.005,
     },
     subtitle: {
-        fontSize: 16,
+        fontSize: width * 0.04,
         color: 'rgba(255, 255, 255, 0.8)',
     },
-    profileButton: {
-        padding: 10,
-        borderRadius: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    },
     section: {
-        marginBottom: 25,
-        paddingHorizontal: 20,
+        marginBottom: height * 0.04,
+        paddingHorizontal: width * 0.05,
     },
     sectionTitle: {
-        fontSize: 22,
+        fontSize: width * 0.055,
         fontWeight: 'bold',
         color: '#ffd700',
-        marginBottom: 15,
+        marginBottom: height * 0.02,
     },
     statsGrid: {
         flexDirection: 'row',
@@ -379,14 +360,14 @@ const styles = StyleSheet.create({
     },
     statCard: {
         width: '48%',
-        height: 120,
-        marginBottom: 15,
-        borderRadius: 15,
+        height: height * 0.14,
+        marginBottom: height * 0.02,
+        borderRadius: width * 0.04,
         overflow: 'hidden',
     },
     statGradient: {
         flex: 1,
-        padding: 15,
+        padding: width * 0.04,
         justifyContent: 'space-between',
     },
     statHeader: {
@@ -395,60 +376,60 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     statIconContainer: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: width * 0.1,
+        height: width * 0.1,
+        borderRadius: width * 0.05,
         justifyContent: 'center',
         alignItems: 'center',
     },
     statValue: {
         color: '#fff',
-        fontSize: 20,
+        fontSize: width * 0.05,
         fontWeight: 'bold',
     },
     statTitle: {
         color: '#fff',
-        fontSize: 14,
+        fontSize: width * 0.035,
         fontWeight: '600',
-        marginTop: 5,
+        marginTop: height * 0.005,
     },
     statSubtitle: {
         color: 'rgba(255, 255, 255, 0.8)',
-        fontSize: 12,
+        fontSize: width * 0.03,
     },
     progressSection: {
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        borderRadius: 15,
-        padding: 20,
+        borderRadius: width * 0.04,
+        padding: width * 0.05,
     },
     progressContainer: {
-        marginBottom: 20,
+        marginBottom: height * 0.025,
     },
     progressHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 8,
+        marginBottom: height * 0.01,
     },
     progressTitle: {
         color: '#fff',
-        fontSize: 16,
+        fontSize: width * 0.04,
         fontWeight: '500',
     },
     progressPercentage: {
         color: '#ffd700',
-        fontSize: 16,
+        fontSize: width * 0.04,
         fontWeight: 'bold',
     },
     progressBar: {
-        height: 8,
+        height: height * 0.01,
         backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        borderRadius: 4,
+        borderRadius: width * 0.01,
         overflow: 'hidden',
     },
     progressFill: {
         height: '100%',
-        borderRadius: 4,
+        borderRadius: width * 0.01,
     },
     achievementsGrid: {
         flexDirection: 'row',
@@ -458,40 +439,39 @@ const styles = StyleSheet.create({
     achievementCard: {
         width: '48%',
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        borderRadius: 15,
-        padding: 15,
+        borderRadius: width * 0.04,
+        padding: width * 0.04,
         alignItems: 'center',
-        marginBottom: 15,
+        marginBottom: height * 0.02,
         borderWidth: 1,
         borderColor: 'rgba(255, 215, 0, 0.2)',
     },
     achievementIcon: {
-        marginBottom: 10,
+        marginBottom: height * 0.01,
     },
     achievementTitle: {
         color: '#fff',
-        fontSize: 14,
+        fontSize: width * 0.035,
         fontWeight: 'bold',
         textAlign: 'center',
-        marginBottom: 5,
+        marginBottom: height * 0.005,
     },
     achievementDesc: {
         color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: 12,
+        fontSize: width * 0.03,
         textAlign: 'center',
     },
     bottomSpacer: {
-        height: 30,
+        height: height * 0.03,
     },
-    // Menu Inferior (estilos iguais às outras telas)
     bottomTabBar: {
         position: 'absolute',
         bottom: 0,
         left: 0,
         right: 0,
-        height: 80,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
+        height: height * 0.11,
+        borderTopLeftRadius: width * 0.05,
+        borderTopRightRadius: width * 0.05,
         overflow: 'hidden',
     },
     tabBarGradient: {
@@ -499,9 +479,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-around',
-        paddingHorizontal: 10,
-        paddingTop: 10,
-        paddingBottom: 25,
+        paddingHorizontal: width * 0.03,
+        paddingTop: height * 0.012,
+        paddingBottom: height * 0.03,
     },
     bottomTabItem: {
         alignItems: 'center',
@@ -509,19 +489,19 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     tabIconContainer: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: width * 0.1,
+        height: width * 0.1,
+        borderRadius: width * 0.05,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 4,
+        marginBottom: height * 0.005,
     },
     tabIconContainerActive: {
         backgroundColor: 'rgba(255, 215, 0, 0.15)',
     },
     bottomTabLabel: {
         color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: 12,
+        fontSize: width * 0.03,
         fontWeight: '500',
     },
     bottomTabLabelActive: {

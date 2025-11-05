@@ -23,7 +23,7 @@ const BookCard = ({ title, author, image, type, onPress }) => (
     <TouchableOpacity style={styles.bookCard} onPress={onPress}>
         <View style={styles.bookImageContainer}>
             <View style={styles.bookImagePlaceholder}>
-                <Ionicons name="book" size={40} color="#ffd700" />
+                <Ionicons name="book" size={width * 0.1} color="#ffd700" />
             </View>
             {type === 'eBook' && (
                 <View style={styles.ebookBadge}>
@@ -78,7 +78,7 @@ const ImageCarousel = ({ data, onButtonPress }) => {
                     </TouchableOpacity>
                 </View>
                 <View style={styles.carouselIcon}>
-                    <Ionicons name={item.icon} size={80} color="rgba(255, 255, 255, 0.3)" />
+                    <Ionicons name={item.icon} size={width * 0.2} color="rgba(255, 255, 255, 0.3)" />
                 </View>
             </LinearGradient>
         </View>
@@ -116,7 +116,7 @@ const ImageCarousel = ({ data, onButtonPress }) => {
     );
 };
 
-// Componente de Menu Superior (igual à imagem)
+// Componente de Menu Superior
 const TopNavigation = ({ activeTab, onTabChange }) => {
     const tabs = [
         { key: 'todos', label: 'Todos' },
@@ -157,7 +157,7 @@ const TopNavigation = ({ activeTab, onTabChange }) => {
     );
 };
 
-// Componente de Menu Inferior (atualizado com perfil)
+// Componente de Menu Inferior (COM ícone de perfil)
 const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
     const tabs = [
         { key: 'home', icon: 'home', label: 'Início' },
@@ -169,10 +169,7 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
 
     const handleTabPress = (tab) => {
         onTabChange(tab.key);
-        // Navegação para as respectivas telas
-        if (tab.key === 'profile') {
-            navigation.navigate('Profile'); // ← ATUALIZADO
-        } else if (tab.key === 'search') {
+        if (tab.key === 'search') {
             navigation.navigate('Stories', {
                 searchQuery: '',
                 category: 'all',
@@ -182,6 +179,8 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
             navigation.navigate('Library');
         } else if (tab.key === 'status') {
             navigation.navigate('Status');
+        } else if (tab.key === 'profile') {
+            navigation.navigate('Profile');
         }
     };
 
@@ -208,7 +207,7 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
                         ]}>
                             <Ionicons
                                 name={tab.icon}
-                                size={24}
+                                size={width * 0.06}
                                 color={activeTab === tab.key ? '#ffd700' : 'rgba(255, 255, 255, 0.7)'}
                             />
                         </View>
@@ -225,7 +224,7 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
     );
 };
 
-// Dados simulados baseados na imagem
+// Dados simulados
 const mockBooks = {
     popular: [
         {
@@ -322,7 +321,6 @@ export default function ParentDashboardScreen({ navigation }) {
     ];
 
     useEffect(() => {
-        // Simular carregamento de dados
         setTimeout(() => {
             setLoading(false);
         }, 1000);
@@ -338,7 +336,6 @@ export default function ParentDashboardScreen({ navigation }) {
                     text: 'Começar',
                     onPress: () => {
                         Alert.alert('Sucesso', `Iniciando leitura de "${book.title}"!`);
-                        // Aqui você pode navegar para a tela de leitura
                     }
                 }
             ]
@@ -346,7 +343,6 @@ export default function ParentDashboardScreen({ navigation }) {
     };
 
     const handleSearch = () => {
-        // Navegar para StoriesScreen com a query de busca
         if (searchQuery.trim() !== '') {
             navigation.navigate('Stories', {
                 searchQuery: searchQuery,
@@ -398,10 +394,6 @@ export default function ParentDashboardScreen({ navigation }) {
         });
     };
 
-    const handleProfilePress = () => {
-        navigation.navigate('Profile'); // ← ATUALIZADO
-    };
-
     const handleLibraryPress = () => {
         navigation.navigate('Library');
     };
@@ -437,25 +429,19 @@ export default function ParentDashboardScreen({ navigation }) {
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
             >
-                {/* Header */}
+                {/* Header - SEM ícone de perfil */}
                 <View style={styles.header}>
-                    <View>
+                    <View style={styles.headerContent}>
                         <Text style={styles.welcomeText}>Olá, Pais! </Text>
                         <Text style={styles.subtitle}>Bem-vindo ao ArtFlow</Text>
                     </View>
-                    <TouchableOpacity
-                        style={styles.profileButton}
-                        onPress={handleProfilePress} // ← ATUALIZADO
-                    >
-                        <Ionicons name="person" size={24} color="#ffd700" />
-                    </TouchableOpacity>
                 </View>
 
                 {/* Barra de Pesquisa */}
                 <View style={styles.searchContainer}>
                     <View style={styles.searchBar}>
                         <TouchableOpacity onPress={handleSearch}>
-                            <Ionicons name="search" size={20} color="rgba(255, 255, 255, 0.6)" />
+                            <Ionicons name="search" size={width * 0.05} color="rgba(255, 255, 255, 0.6)" />
                         </TouchableOpacity>
                         <TextInput
                             style={styles.searchInput}
@@ -468,13 +454,13 @@ export default function ParentDashboardScreen({ navigation }) {
                         />
                         {searchQuery !== '' && (
                             <TouchableOpacity onPress={() => setSearchQuery('')}>
-                                <Ionicons name="close-circle" size={20} color="rgba(255, 255, 255, 0.6)" />
+                                <Ionicons name="close-circle" size={width * 0.05} color="rgba(255, 255, 255, 0.6)" />
                             </TouchableOpacity>
                         )}
                     </View>
                 </View>
 
-                {/* Navegação Superior (igual à imagem) */}
+                {/* Navegação Superior */}
                 <TopNavigation activeTab={activeTopTab} onTabChange={setActiveTopTab} />
 
                 {/* Carrossel Principal */}
@@ -545,7 +531,7 @@ export default function ParentDashboardScreen({ navigation }) {
                                 colors={['#6b2fa0', '#8a4cbf']}
                                 style={styles.categoryGradient}
                             >
-                                <Ionicons name="trail-sign" size={24} color="#fff" />
+                                <Ionicons name="trail-sign" size={width * 0.06} color="#fff" />
                                 <Text style={styles.categoryButtonText}>Aventura</Text>
                             </LinearGradient>
                         </TouchableOpacity>
@@ -558,7 +544,7 @@ export default function ParentDashboardScreen({ navigation }) {
                                 colors={['#ff6b6b', '#ff9e7d']}
                                 style={styles.categoryGradient}
                             >
-                                <Ionicons name="sparkles" size={24} color="#fff" />
+                                <Ionicons name="sparkles" size={width * 0.06} color="#fff" />
                                 <Text style={styles.categoryButtonText}>Fantasia</Text>
                             </LinearGradient>
                         </TouchableOpacity>
@@ -571,7 +557,7 @@ export default function ParentDashboardScreen({ navigation }) {
                                 colors={['#4caf50', '#66bb6a']}
                                 style={styles.categoryGradient}
                             >
-                                <Ionicons name="school" size={24} color="#fff" />
+                                <Ionicons name="school" size={width * 0.06} color="#fff" />
                                 <Text style={styles.categoryButtonText}>Educativo</Text>
                             </LinearGradient>
                         </TouchableOpacity>
@@ -584,7 +570,7 @@ export default function ParentDashboardScreen({ navigation }) {
                                 colors={['#ffd700', '#f6ad55']}
                                 style={styles.categoryGradient}
                             >
-                                <Ionicons name="paw" size={24} color="#fff" />
+                                <Ionicons name="paw" size={width * 0.06} color="#fff" />
                                 <Text style={styles.categoryButtonText}>Animais</Text>
                             </LinearGradient>
                         </TouchableOpacity>
@@ -610,7 +596,7 @@ export default function ParentDashboardScreen({ navigation }) {
                             >
                                 <View style={styles.recommendationContent}>
                                     <View style={styles.recommendationIcon}>
-                                        <Ionicons name="star" size={30} color="#ffd700" />
+                                        <Ionicons name="star" size={width * 0.08} color="#ffd700" />
                                     </View>
                                     <View style={styles.recommendationText}>
                                         <Text style={styles.recommendationTitle}>
@@ -647,7 +633,7 @@ export default function ParentDashboardScreen({ navigation }) {
                                 style={styles.libraryGradient}
                             >
                                 <View style={styles.libraryContent}>
-                                    <Ionicons name="heart" size={40} color="#fff" />
+                                    <Ionicons name="heart" size={width * 0.1} color="#fff" />
                                     <Text style={styles.libraryText}>Acesse seus favoritos</Text>
                                     <Text style={styles.librarySubtext}>
                                         Veja seus livros favoritos e progresso de leitura
@@ -662,7 +648,7 @@ export default function ParentDashboardScreen({ navigation }) {
                 <View style={styles.bottomSpacer} />
             </ScrollView>
 
-            {/* Menu Inferior (atualizado com favoritos) */}
+            {/* Menu Inferior (COM ícone de perfil) */}
             <BottomTabBar
                 activeTab={activeBottomTab}
                 onTabChange={setActiveBottomTab}
@@ -686,8 +672,8 @@ const styles = StyleSheet.create({
     },
     loadingText: {
         color: '#ffd700',
-        marginTop: 20,
-        fontSize: 16,
+        marginTop: height * 0.02,
+        fontSize: width * 0.04,
     },
     gradient: {
         position: 'absolute',
@@ -700,73 +686,65 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     scrollContent: {
-        paddingBottom: 90,
+        paddingBottom: height * 0.11,
     },
     header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingTop: 60,
-        paddingBottom: 15,
+        paddingHorizontal: width * 0.05,
+        paddingTop: height * 0.06,
+        paddingBottom: height * 0.02,
+    },
+    headerContent: {
+        alignItems: 'flex-start',
     },
     welcomeText: {
-        fontSize: 28,
+        fontSize: width * 0.07,
         fontWeight: 'bold',
         color: '#ffd700',
-        marginBottom: 5,
+        marginBottom: height * 0.005,
     },
     subtitle: {
-        fontSize: 16,
+        fontSize: width * 0.04,
         color: 'rgba(255, 255, 255, 0.8)',
     },
-    profileButton: {
-        padding: 10,
-        borderRadius: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    },
     searchContainer: {
-        paddingHorizontal: 20,
-        marginBottom: 20,
+        paddingHorizontal: width * 0.05,
+        marginBottom: height * 0.02,
     },
     searchBar: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        borderRadius: 15,
-        paddingHorizontal: 15,
-        paddingVertical: 12,
+        borderRadius: width * 0.04,
+        paddingHorizontal: width * 0.04,
+        paddingVertical: height * 0.015,
         borderWidth: 1,
         borderColor: 'rgba(255, 215, 0, 0.2)',
     },
     searchInput: {
         flex: 1,
         color: '#fff',
-        fontSize: 16,
-        marginLeft: 10,
-        marginRight: 10,
+        fontSize: width * 0.04,
+        marginLeft: width * 0.02,
+        marginRight: width * 0.02,
     },
     // Navegação Superior
     topNavigation: {
-        marginBottom: 20,
+        marginBottom: height * 0.02,
         borderBottomWidth: 1,
         borderBottomColor: 'rgba(255, 255, 255, 0.1)',
     },
     navScrollContent: {
-        paddingHorizontal: 20,
+        paddingHorizontal: width * 0.05,
     },
     navItem: {
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        marginRight: 15,
+        paddingHorizontal: width * 0.04,
+        paddingVertical: height * 0.015,
+        marginRight: width * 0.04,
         position: 'relative',
-    },
-    navItemActive: {
-        // Estilo ativo sem background
     },
     navLabel: {
         color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: 16,
+        fontSize: width * 0.04,
         fontWeight: '500',
     },
     navLabelActive: {
@@ -784,18 +762,18 @@ const styles = StyleSheet.create({
     },
     // Carrossel
     carouselContainer: {
-        height: 200,
-        marginBottom: 25,
+        height: height * 0.25,
+        marginBottom: height * 0.03,
     },
     carouselItem: {
-        width: width - 40,
-        marginHorizontal: 20,
-        borderRadius: 20,
+        width: width - width * 0.1,
+        marginHorizontal: width * 0.05,
+        borderRadius: width * 0.05,
         overflow: 'hidden',
     },
     carouselGradient: {
         flex: 1,
-        padding: 25,
+        padding: width * 0.06,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -804,107 +782,107 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     carouselTitle: {
-        fontSize: 20,
+        fontSize: width * 0.05,
         fontWeight: 'bold',
         color: '#fff',
-        marginBottom: 8,
+        marginBottom: height * 0.01,
     },
     carouselDescription: {
-        fontSize: 14,
+        fontSize: width * 0.035,
         color: 'rgba(255, 255, 255, 0.9)',
-        marginBottom: 15,
+        marginBottom: height * 0.02,
     },
     carouselButton: {
         backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        paddingHorizontal: 20,
-        paddingVertical: 8,
-        borderRadius: 15,
+        paddingHorizontal: width * 0.05,
+        paddingVertical: height * 0.01,
+        borderRadius: width * 0.04,
         alignSelf: 'flex-start',
     },
     carouselButtonText: {
         color: '#fff',
         fontWeight: '600',
-        fontSize: 14,
+        fontSize: width * 0.035,
     },
     carouselIcon: {
-        marginLeft: 15,
+        marginLeft: width * 0.04,
     },
     carouselDots: {
         flexDirection: 'row',
         justifyContent: 'center',
-        marginTop: 15,
+        marginTop: height * 0.02,
     },
     dot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
+        width: width * 0.02,
+        height: width * 0.02,
+        borderRadius: width * 0.01,
         backgroundColor: 'rgba(255, 255, 255, 0.3)',
-        marginHorizontal: 4,
+        marginHorizontal: width * 0.01,
     },
     dotActive: {
         backgroundColor: '#ffd700',
-        width: 20,
+        width: width * 0.05,
     },
     // Seções
     section: {
-        marginBottom: 30,
+        marginBottom: height * 0.03,
     },
     sectionHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: 20,
-        marginBottom: 15,
+        paddingHorizontal: width * 0.05,
+        marginBottom: height * 0.02,
     },
     sectionTitle: {
-        fontSize: 22,
+        fontSize: width * 0.055,
         fontWeight: 'bold',
         color: '#ffd700',
     },
     seeAllText: {
         color: '#ffd700',
-        fontSize: 14,
+        fontSize: width * 0.035,
         fontWeight: '500',
     },
     // Lista de Livros
     booksList: {
-        paddingHorizontal: 20,
+        paddingHorizontal: width * 0.05,
     },
     bookCard: {
-        width: 160,
-        marginRight: 15,
+        width: width * 0.4,
+        marginRight: width * 0.04,
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        borderRadius: 15,
-        padding: 15,
+        borderRadius: width * 0.04,
+        padding: width * 0.04,
         borderWidth: 1,
         borderColor: 'rgba(255, 215, 0, 0.2)',
     },
     bookImageContainer: {
         alignItems: 'center',
-        marginBottom: 10,
+        marginBottom: height * 0.01,
         position: 'relative',
     },
     bookImagePlaceholder: {
-        width: 80,
-        height: 80,
-        borderRadius: 10,
+        width: width * 0.2,
+        height: width * 0.2,
+        borderRadius: width * 0.03,
         backgroundColor: 'rgba(255, 215, 0, 0.1)',
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 8,
+        marginBottom: height * 0.01,
     },
     ebookBadge: {
         position: 'absolute',
-        top: -5,
-        right: -5,
+        top: -height * 0.005,
+        right: -width * 0.01,
         backgroundColor: '#ff6b6b',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 10,
+        paddingHorizontal: width * 0.02,
+        paddingVertical: height * 0.005,
+        borderRadius: width * 0.03,
     },
     ebookText: {
         color: '#fff',
-        fontSize: 10,
+        fontSize: width * 0.025,
         fontWeight: 'bold',
     },
     bookInfo: {
@@ -912,15 +890,15 @@ const styles = StyleSheet.create({
     },
     bookTitle: {
         color: '#fff',
-        fontSize: 14,
+        fontSize: width * 0.035,
         fontWeight: 'bold',
-        marginBottom: 5,
-        lineHeight: 18,
+        marginBottom: height * 0.005,
+        lineHeight: height * 0.022,
         textAlign: 'center',
     },
     bookAuthor: {
         color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: 12,
+        fontSize: width * 0.03,
         textAlign: 'center',
     },
     // Categorias
@@ -928,102 +906,102 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
-        paddingHorizontal: 20,
+        paddingHorizontal: width * 0.05,
     },
     categoryButton: {
         width: '48%',
-        height: 80,
-        marginBottom: 15,
-        borderRadius: 15,
+        height: height * 0.1,
+        marginBottom: height * 0.02,
+        borderRadius: width * 0.04,
         overflow: 'hidden',
     },
     categoryGradient: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 15,
+        padding: width * 0.04,
     },
     categoryButtonText: {
         color: '#fff',
-        fontSize: 14,
+        fontSize: width * 0.035,
         fontWeight: 'bold',
-        marginTop: 8,
+        marginTop: height * 0.01,
         textAlign: 'center',
     },
     // Recomendações
     recommendationContainer: {
-        paddingHorizontal: 20,
+        paddingHorizontal: width * 0.05,
     },
     recommendationCard: {
-        borderRadius: 20,
+        borderRadius: width * 0.05,
         overflow: 'hidden',
-        marginBottom: 10,
+        marginBottom: height * 0.01,
     },
     recommendationGradient: {
-        padding: 20,
+        padding: width * 0.05,
     },
     recommendationContent: {
         flexDirection: 'row',
         alignItems: 'center',
     },
     recommendationIcon: {
-        width: 60,
-        height: 60,
-        borderRadius: 15,
+        width: width * 0.15,
+        height: width * 0.15,
+        borderRadius: width * 0.04,
         backgroundColor: 'rgba(255, 255, 255, 0.2)',
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 15,
+        marginRight: width * 0.04,
     },
     recommendationText: {
         flex: 1,
     },
     recommendationTitle: {
         color: '#fff',
-        fontSize: 18,
+        fontSize: width * 0.045,
         fontWeight: 'bold',
-        marginBottom: 5,
+        marginBottom: height * 0.005,
     },
     recommendationAuthor: {
         color: 'rgba(255, 255, 255, 0.8)',
-        fontSize: 14,
-        marginBottom: 5,
+        fontSize: width * 0.035,
+        marginBottom: height * 0.005,
     },
     recommendationDuration: {
         color: '#ffd700',
-        fontSize: 12,
+        fontSize: width * 0.03,
         fontWeight: '600',
     },
     // Biblioteca Preview
     libraryPreview: {
-        paddingHorizontal: 20,
+        paddingHorizontal: width * 0.05,
     },
     libraryCard: {
-        borderRadius: 20,
+        borderRadius: width * 0.05,
         overflow: 'hidden',
-        marginBottom: 10,
+        marginBottom: height * 0.01,
     },
     libraryGradient: {
-        padding: 25,
+        padding: width * 0.06,
     },
     libraryContent: {
         alignItems: 'center',
     },
     libraryText: {
         color: '#fff',
-        fontSize: 18,
+        fontSize: width * 0.045,
         fontWeight: 'bold',
-        marginTop: 15,
-        marginBottom: 8,
+        marginTop: height * 0.02,
+        marginBottom: height * 0.01,
         textAlign: 'center',
     },
     librarySubtext: {
         color: 'rgba(255, 255, 255, 0.8)',
-        fontSize: 14,
+        fontSize: width * 0.035,
         textAlign: 'center',
     },
     bottomSpacer: {
-        height: 30,
+        height: height * 0.03,
     },
     // Menu Inferior
     bottomTabBar: {
@@ -1031,9 +1009,9 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        height: 80,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
+        height: height * 0.11,
+        borderTopLeftRadius: width * 0.05,
+        borderTopRightRadius: width * 0.05,
         overflow: 'hidden',
     },
     tabBarGradient: {
@@ -1041,9 +1019,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-around',
-        paddingHorizontal: 10,
-        paddingTop: 10,
-        paddingBottom: 25,
+        paddingHorizontal: width * 0.03,
+        paddingTop: height * 0.012,
+        paddingBottom: height * 0.03,
     },
     bottomTabItem: {
         alignItems: 'center',
@@ -1051,19 +1029,19 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     tabIconContainer: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: width * 0.1,
+        height: width * 0.1,
+        borderRadius: width * 0.05,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 4,
+        marginBottom: height * 0.005,
     },
     tabIconContainerActive: {
         backgroundColor: 'rgba(255, 215, 0, 0.15)',
     },
     bottomTabLabel: {
         color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: 12,
+        fontSize: width * 0.03,
         fontWeight: '500',
     },
     bottomTabLabelActive: {
