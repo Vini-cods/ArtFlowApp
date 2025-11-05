@@ -11,7 +11,8 @@ import {
     StatusBar,
     FlatList,
     TextInput,
-    Alert
+    Alert,
+    Image
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,9 +23,13 @@ const { width, height } = Dimensions.get('window');
 const BookCard = ({ title, author, image, type, onPress }) => (
     <TouchableOpacity style={styles.bookCard} onPress={onPress}>
         <View style={styles.bookImageContainer}>
-            <View style={styles.bookImagePlaceholder}>
-                <Ionicons name="book" size={width * 0.1} color="#ffd700" />
-            </View>
+            {image ? (
+                <Image source={image} style={styles.bookImage} />
+            ) : (
+                <View style={styles.bookImagePlaceholder}>
+                    <Ionicons name="book" size={width * 0.1} color="#ffd700" />
+                </View>
+            )}
             {type === 'eBook' && (
                 <View style={styles.ebookBadge}>
                     <Text style={styles.ebookText}>eBook</Text>
@@ -116,47 +121,6 @@ const ImageCarousel = ({ data, onButtonPress }) => {
     );
 };
 
-// Componente de Menu Superior
-const TopNavigation = ({ activeTab, onTabChange }) => {
-    const tabs = [
-        { key: 'todos', label: 'Todos' },
-        { key: 'ebooks', label: 'eBooks' },
-        { key: 'notícias', label: 'Notícias' },
-        { key: 'ficção', label: 'Ficção' },
-        { key: 'gerenciar', label: 'Gerenciar' },
-        { key: 'fortress', label: 'Fortress' }
-    ];
-
-    return (
-        <View style={styles.topNavigation}>
-            <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.navScrollContent}
-            >
-                {tabs.map((tab) => (
-                    <TouchableOpacity
-                        key={tab.key}
-                        style={[
-                            styles.navItem,
-                            activeTab === tab.key && styles.navItemActive
-                        ]}
-                        onPress={() => onTabChange(tab.key)}
-                    >
-                        <Text style={[
-                            styles.navLabel,
-                            activeTab === tab.key && styles.navLabelActive
-                        ]}>
-                            {tab.label}
-                        </Text>
-                        {activeTab === tab.key && <View style={styles.activeIndicator} />}
-                    </TouchableOpacity>
-                ))}
-            </ScrollView>
-        </View>
-    );
-};
-
 // Componente de Menu Inferior (COM ícone de perfil)
 const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
     const tabs = [
@@ -224,66 +188,98 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
     );
 };
 
-// Dados simulados
+// Dados dos livros com URLs de placeholder
 const mockBooks = {
     popular: [
         {
             id: 1,
-            title: 'Her Radiant Curse',
-            author: 'Elizabeth Van',
+            title: 'Aventura na Floresta',
+            author: 'Sofia Mendes',
             type: 'book',
-            duration: 8
+            duration: 8,
+            image: { uri: 'https://placehold.co/150x200/6b2fa0/FFFFFF?text=Aventura+Floresta' },
+            description: 'Uma emocionante jornada pela floresta amazônica, onde dois amigos descobrem criaturas mágicas e aprendem sobre a importância de preservar a natureza.',
+            category: 'Aventura, Natureza',
+            ageRange: '5-10 anos'
         },
         {
             id: 2,
-            title: 'Prindgesso',
-            author: 'Quart milk',
+            title: 'O Castelo Mágico',
+            author: 'Carlos Silva',
             type: 'book',
-            duration: 10
+            duration: 10,
+            image: { uri: 'https://placehold.co/150x200/8a4cbf/FFFFFF?text=Castelo+Mágico' },
+            description: 'Em um reino distante, uma jovem princesa descobre um castelo encantado cheio de segredos e criaturas fantásticas que precisam de sua ajuda.',
+            category: 'Fantasia, Aventura',
+            ageRange: '4-8 anos'
         },
         {
             id: 3,
-            title: 'HIP RODANT CUGE',
-            author: 'Autor Desconhecido',
+            title: 'Viagem ao Espaço',
+            author: 'Ana Costa',
             type: 'book',
-            duration: 12
+            duration: 12,
+            image: { uri: 'https://placehold.co/150x200/2d1554/FFFFFF?text=Viagem+Espaço' },
+            description: 'Junte-se à tripulação da nave estelar Exploradora em uma missão para descobrir novos planetas e fazer amizade com alienígenas curiosos.',
+            category: 'Ficção Científica',
+            ageRange: '6-12 anos'
         },
         {
             id: 4,
-            title: 'Aventura Espacial',
-            author: 'Carlos Silva',
+            title: 'O Tesouro Perdido',
+            author: 'Miguel Santos',
             type: 'book',
-            duration: 15
+            duration: 15,
+            image: { uri: 'https://placehold.co/150x200/ff6b6b/FFFFFF?text=Tesouro+Perdido' },
+            description: 'Um mapa misterioso leva três irmãos em uma caça ao tesouro cheia de enigmas, desafios e descobertas sobre trabalho em equipe.',
+            category: 'Aventura, Mistério',
+            ageRange: '7-12 anos'
         }
     ],
     ebooks: [
         {
             id: 5,
-            title: 'Kiera and the Sun',
-            author: 'Autor Desconhecido',
-            type: 'eBook',
-            duration: 15
-        },
-        {
-            id: 6,
-            title: 'Dilist and Fury',
-            author: 'Autor Desconhecido',
-            type: 'eBook',
-            duration: 10
-        },
-        {
-            id: 7,
             title: 'O Pequeno Príncipe',
             author: 'Antoine de Saint-Exupéry',
             type: 'eBook',
-            duration: 12
+            duration: 15,
+            image: { uri: 'https://placehold.co/150x200/ff9e7d/FFFFFF?text=Pequeno+Príncipe' },
+            description: 'A clássica história de um pequeno príncipe que viaja de planeta em planeta, encontrando personagens peculiares e aprendendo valiosas lições sobre amor e amizade.',
+            category: 'Aventura, Fantasia',
+            ageRange: '6-12 anos'
+        },
+        {
+            id: 6,
+            title: 'A Menina e o Dragão',
+            author: 'Eva Furnari',
+            type: 'eBook',
+            duration: 10,
+            image: { uri: 'https://placehold.co/150x200/4caf50/FFFFFF?text=Menina+Dragão' },
+            description: 'Uma menina corajosa faz amizade com um dragão que é mal compreendido por todos. Juntos, eles mostram à vila que as aparências enganam.',
+            category: 'Fantasia, Amizade',
+            ageRange: '5-10 anos'
+        },
+        {
+            id: 7,
+            title: 'No Fundo do Mar',
+            author: 'Booksmile',
+            type: 'eBook',
+            duration: 12,
+            image: { uri: 'https://placehold.co/150x200/2196f3/FFFFFF?text=Fundo+Mar' },
+            description: 'Uma aventura submarina onde duas crianças exploram o fundo do mar, descobrindo criaturas incríveis e aprendendo sobre a importância de preservar os oceanos.',
+            category: 'Aventura, Natureza',
+            ageRange: '4-8 anos'
         },
         {
             id: 8,
-            title: 'As Crônicas de Nárnia',
-            author: 'C.S. Lewis',
+            title: 'O Circo Mágico',
+            author: 'Alexandre Brito',
             type: 'eBook',
-            duration: 18
+            duration: 18,
+            image: { uri: 'https://placehold.co/150x200/ffd700/333333?text=Circo+Mágico' },
+            description: 'Quando um circo misterioso chega à cidade, três amigos descobrem que os artistas têm talentos verdadeiramente mágicos e embarcam em uma aventura inesquecível.',
+            category: 'Aventura, Fantasia',
+            ageRange: '5-9 anos'
         }
     ]
 };
@@ -292,7 +288,6 @@ export default function ParentDashboardScreen({ navigation }) {
     const [loading, setLoading] = useState(true);
     const [activeTopTab, setActiveTopTab] = useState('todos');
     const [activeBottomTab, setActiveBottomTab] = useState('home');
-    const [searchQuery, setSearchQuery] = useState('');
     const [booksData, setBooksData] = useState(mockBooks);
 
     // Dados do carrossel
@@ -327,35 +322,8 @@ export default function ParentDashboardScreen({ navigation }) {
     }, []);
 
     const handleBookPress = (book) => {
-        Alert.alert(
-            'Iniciar Leitura',
-            `Deseja ler "${book.title}"?`,
-            [
-                { text: 'Cancelar', style: 'cancel' },
-                {
-                    text: 'Começar',
-                    onPress: () => {
-                        Alert.alert('Sucesso', `Iniciando leitura de "${book.title}"!`);
-                    }
-                }
-            ]
-        );
-    };
-
-    const handleSearch = () => {
-        if (searchQuery.trim() !== '') {
-            navigation.navigate('Stories', {
-                searchQuery: searchQuery,
-                category: 'all',
-                fromSearch: true
-            });
-        } else {
-            navigation.navigate('Stories', {
-                searchQuery: '',
-                category: 'all',
-                fromSearch: true
-            });
-        }
+        // Navegar para a tela de detalhes do livro
+        navigation.navigate('BookDetail', { book });
     };
 
     const handleCarouselButton = (buttonText) => {
@@ -437,32 +405,6 @@ export default function ParentDashboardScreen({ navigation }) {
                     </View>
                 </View>
 
-                {/* Barra de Pesquisa */}
-                <View style={styles.searchContainer}>
-                    <View style={styles.searchBar}>
-                        <TouchableOpacity onPress={handleSearch}>
-                            <Ionicons name="search" size={width * 0.05} color="rgba(255, 255, 255, 0.6)" />
-                        </TouchableOpacity>
-                        <TextInput
-                            style={styles.searchInput}
-                            placeholder="Procurar por Livros..."
-                            placeholderTextColor="rgba(255, 255, 255, 0.6)"
-                            value={searchQuery}
-                            onChangeText={setSearchQuery}
-                            onSubmitEditing={handleSearch}
-                            returnKeyType="search"
-                        />
-                        {searchQuery !== '' && (
-                            <TouchableOpacity onPress={() => setSearchQuery('')}>
-                                <Ionicons name="close-circle" size={width * 0.05} color="rgba(255, 255, 255, 0.6)" />
-                            </TouchableOpacity>
-                        )}
-                    </View>
-                </View>
-
-                {/* Navegação Superior */}
-                <TopNavigation activeTab={activeTopTab} onTabChange={setActiveTopTab} />
-
                 {/* Carrossel Principal */}
                 <ImageCarousel
                     data={carouselData}
@@ -488,6 +430,7 @@ export default function ParentDashboardScreen({ navigation }) {
                                 title={item.title}
                                 author={item.author}
                                 type={item.type}
+                                image={item.image}
                                 onPress={() => handleBookPress(item)}
                             />
                         )}
@@ -513,6 +456,7 @@ export default function ParentDashboardScreen({ navigation }) {
                                 title={item.title}
                                 author={item.author}
                                 type={item.type}
+                                image={item.image}
                                 onPress={() => handleBookPress(item)}
                             />
                         )}
@@ -706,60 +650,6 @@ const styles = StyleSheet.create({
         fontSize: width * 0.04,
         color: 'rgba(255, 255, 255, 0.8)',
     },
-    searchContainer: {
-        paddingHorizontal: width * 0.05,
-        marginBottom: height * 0.02,
-    },
-    searchBar: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        borderRadius: width * 0.04,
-        paddingHorizontal: width * 0.04,
-        paddingVertical: height * 0.015,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 215, 0, 0.2)',
-    },
-    searchInput: {
-        flex: 1,
-        color: '#fff',
-        fontSize: width * 0.04,
-        marginLeft: width * 0.02,
-        marginRight: width * 0.02,
-    },
-    // Navegação Superior
-    topNavigation: {
-        marginBottom: height * 0.02,
-        borderBottomWidth: 1,
-        borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-    },
-    navScrollContent: {
-        paddingHorizontal: width * 0.05,
-    },
-    navItem: {
-        paddingHorizontal: width * 0.04,
-        paddingVertical: height * 0.015,
-        marginRight: width * 0.04,
-        position: 'relative',
-    },
-    navLabel: {
-        color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: width * 0.04,
-        fontWeight: '500',
-    },
-    navLabelActive: {
-        color: '#ffd700',
-        fontWeight: 'bold',
-    },
-    activeIndicator: {
-        position: 'absolute',
-        bottom: -1,
-        left: 0,
-        right: 0,
-        height: 3,
-        backgroundColor: '#ffd700',
-        borderRadius: 2,
-    },
     // Carrossel
     carouselContainer: {
         height: height * 0.25,
@@ -861,6 +751,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: height * 0.01,
         position: 'relative',
+    },
+    bookImage: {
+        width: width * 0.2,
+        height: width * 0.2,
+        borderRadius: width * 0.03,
+        marginBottom: height * 0.01,
     },
     bookImagePlaceholder: {
         width: width * 0.2,
