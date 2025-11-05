@@ -11,6 +11,8 @@ import StoriesScreen from './screens/StoriesScreen';
 import StatusScreen from './screens/StatusScreen';
 import LibraryScreen from './screens/LibraryScreen';
 import ProfileScreen from './screens/ProfileScreen';
+import BookDetailScreen from './screens/BookDetailScreen';
+import BookReaderScreen from './screens/BookReaderScreen';
 
 const Stack = createStackNavigator();
 
@@ -31,6 +33,8 @@ export default function App() {
         <Stack.Screen name="Status" component={StatusScreen} />
         <Stack.Screen name="Library" component={LibraryScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="BookDetail" component={BookDetailScreen} />
+        <Stack.Screen name="BookReader" component={BookReaderScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
