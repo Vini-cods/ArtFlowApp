@@ -7,6 +7,7 @@ import {
     ScrollView,
     StatusBar,
     Dimensions,
+    Image
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -157,12 +158,14 @@ export default function ProfileScreen({ navigation }) {
 
     const tabs = ['journey', 'progress', 'settings'];
 
-    // Dados do perfil
+    // Dados do perfil com imagens
     const profileData = {
         parentName: 'Ana Paula Silva',
         childName: 'Lucas Silva',
         childAge: 7,
         memberSince: 'Janeiro 2024',
+        parentImage: require('../assets/ana.png'), // Adicione sua imagem aqui
+        childImage: require('../assets/lucas.png'), // Adicione sua imagem aqui
         stats: {
             storiesRead: '47',
             drawingsCreated: '128',
@@ -215,33 +218,35 @@ export default function ProfileScreen({ navigation }) {
                     <View style={styles.profileSection}>
                         {/* Foto do Responsável */}
                         <View style={styles.parentImageContainer}>
-                            <LinearGradient
-                                colors={['#ffd700', '#ffed4e']}
-                                style={styles.parentImage}
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 1 }}
-                            >
-                                <Text style={styles.parentInitial}>
-                                    {profileData.parentName.charAt(0)}
-                                </Text>
-                            </LinearGradient>
+                            <View style={styles.parentImageWrapper}>
+                                <Image
+                                    source={profileData.parentImage}
+                                    style={styles.parentImage}
+                                    defaultSource={require('../assets/ana.png')} // Imagem padrão caso a principal não carregue
+                                />
+                                <LinearGradient
+                                    colors={['transparent', 'rgba(0,0,0,0.3)']}
+                                    style={styles.imageOverlay}
+                                />
+                            </View>
                             <TouchableOpacity style={styles.editImageButton}>
-                                <Ionicons name="camera" size={16} color="#0f0820" />
+                                <Ionicons name="camera" size={16} color="#fff" />
                             </TouchableOpacity>
                         </View>
 
                         {/* Foto da Criança - Sobreposta */}
                         <View style={styles.childImageContainer}>
-                            <LinearGradient
-                                colors={['#a78bfa', '#8b5cf6']}
-                                style={styles.childImage}
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 1 }}
-                            >
-                                <Text style={styles.childInitial}>
-                                    {profileData.childName.charAt(0)}
-                                </Text>
-                            </LinearGradient>
+                            <View style={styles.childImageWrapper}>
+                                <Image
+                                    source={profileData.childImage}
+                                    style={styles.childImage}
+                                    defaultSource={require('../assets/ana.png')}
+                                />
+                                <LinearGradient
+                                    colors={['transparent', 'rgba(0,0,0,0.3)']}
+                                    style={styles.imageOverlay}
+                                />
+                            </View>
                         </View>
                     </View>
 
@@ -494,12 +499,11 @@ const styles = StyleSheet.create({
     parentImageContainer: {
         position: 'relative',
     },
-    parentImage: {
+    parentImageWrapper: {
         width: 110,
         height: 110,
         borderRadius: 55,
-        justifyContent: 'center',
-        alignItems: 'center',
+        overflow: 'hidden',
         borderWidth: 4,
         borderColor: 'rgba(255, 215, 0, 0.3)',
         shadowColor: '#ffd700',
@@ -508,10 +512,40 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
         elevation: 8,
     },
-    parentInitial: {
-        fontSize: 36,
-        fontWeight: 'bold',
-        color: '#0f0820',
+    parentImage: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
+    },
+    childImageContainer: {
+        position: 'absolute',
+        right: -5,
+        bottom: 10,
+    },
+    childImageWrapper: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        overflow: 'hidden',
+        borderWidth: 3,
+        borderColor: '#1a0f3a',
+        shadowColor: '#8b5cf6',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 8,
+    },
+    childImage: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
+    },
+    imageOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
     },
     editImageButton: {
         position: 'absolute',
@@ -525,30 +559,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderWidth: 3,
         borderColor: '#1a0f3a',
-    },
-    childImageContainer: {
-        position: 'absolute',
-        right: -5,
-        bottom: 10,
-    },
-    childImage: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 3,
-        borderColor: '#1a0f3a',
-        shadowColor: '#8b5cf6',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 8,
-    },
-    childInitial: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#fff',
     },
     profileName: {
         fontSize: 28,
