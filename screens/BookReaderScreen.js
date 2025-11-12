@@ -7,14 +7,15 @@ import {
     ScrollView,
     StatusBar,
     Dimensions,
-    Animated
+    Animated,
+    Alert
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 
-// Conteúdo dos livros (em uma aplicação real, isso viria de uma API)
+// Conteúdo dos livros compatível com StoriesScreen e LibraryScreen
 const bookContents = {
     1: [
         "Era uma vez, em uma floresta encantada, dois amigos corajosos chamados Lucas e Sofia.",
@@ -36,7 +37,46 @@ const bookContents = {
         "O castelo revelou seu maior segredo: era guardião de todos os sonhos das crianças do reino.",
         "Isabella se tornou a protetora dos sonhos, garantindo que toda criança pudesse ter noites mágicas e aventuras incríveis em seus sonhos."
     ],
-    // Adicione conteúdo para os outros livros...
+    3: [
+        "No fundo do mar azul, onde os raios de sol mal conseguiam chegar, vivia uma família de peixes coloridos.",
+        "O pequeno Pipo era o mais curioso de todos os peixes. Ele adorava explorar os corais e fazer novos amigos.",
+        "Um dia, Pipo encontrou um tesouro perdido - um baú cheio de conchas brilhantes e pérolas cintilantes.",
+        "Mas o tesouro estava guardado por um polvo muito zeloso que não gostava de visitas.",
+        "Pipo usou sua inteligência e gentileza para fazer amizade com o polvo, mostrando que queria apenas aprender sobre o mundo.",
+        "Juntos, eles organizaram uma festa submarina para todos os habitantes do oceano.",
+        "Os golfinhos cantavam, as estrelas-do-mar dançavam e os cavalos-marinhos faziam acrobacias.",
+        "Pipo descobriu que o maior tesouro não era o baú, mas sim a amizade que havia conquistado."
+    ],
+    4: [
+        "Zoe era uma astronauta mirim que sonhava em explorar o espaço sideral.",
+        "Com sua nave espacial feita de imaginação e latas recicladas, ela partiu em uma missão importante.",
+        "Seu objetivo: encontrar um novo planeta onde as crianças pudessem brincar para sempre.",
+        "No caminho, ela conheceu uma estrela cadente que havia perdido seu brilho.",
+        "Zoe ajudou a estrela a recuperar sua luz, compartilhando um pouco de sua própria alegria.",
+        "Como agradecimento, a estrela mostrou a Zoe o caminho para o Planeta das Brincadeiras.",
+        "Lá, tudo era possível: rios de chocolate, montanhas de algodão doce e escorregadores de arco-íris.",
+        "Zoe trouxe um pedacinho desse planeta para a Terra, ensinando que a imaginação pode tornar qualquer lugar mágico."
+    ],
+    5: [
+        "Era hora de dormir, mas Leo não estava com sono. Ele contou uma, duas, três ovelhas...",
+        "De repente, suas meias começaram a dançar pelo quarto e seu pijama decidiu dar um passeio.",
+        "Os brinquedos ganharam vida e organizaram uma festa do pijama secreta.",
+        "O urso de pelúcia era o DJ, os carrinhos organizavam corridas e as bonecas faziam um desfile de moda.",
+        "Leo se juntou à festa, dançando com suas meias e contando histórias com seus brinquedos.",
+        "Mas logo o cansaço começou a chegar. Seus olhos ficaram pesados e seus bocejos contagiaram todos os brinquedos.",
+        "Um por um, os brinquedos foram voltando para seus lugares, até que o quarto ficou em silêncio novamente.",
+        "Leo finalmente adormeceu, com um sorriso no rosto, sonhando com a próxima festa do pijama."
+    ],
+    6: [
+        "Dengo era um dragão diferente dos outros. Em vez de cuspir fogo, ele cuspia bolhas de sabão coloridas.",
+        "Os outros dragões riam dele, dizendo que um dragão deveria ser assustador, não divertido.",
+        "Mas Dengo não se importava. Ele continuava espalhando alegria por onde passava.",
+        "Um dia, uma tempestade mágica cobriu o reino de tristeza. As cores desapareceram e todos ficaram sérios.",
+        "Os dragões tentaram assustar a tempestade, mas ela só ficava mais forte.",
+        "Foi então que Dengo teve uma ideia. Ele soprou suas maiores e mais coloridas bolhas de sabão.",
+        "As bolhas tocaram as nuvens da tempestade, transformando-a em uma chuva de confetes e risadas.",
+        "Dengo provou que ser diferente é especial, e que a gentileza pode ser mais poderosa que o fogo."
+    ]
 };
 
 export default function BookReaderScreen({ route, navigation }) {
@@ -45,9 +85,16 @@ export default function BookReaderScreen({ route, navigation }) {
     const fadeAnim = useRef(new Animated.Value(1)).current;
 
     const bookContent = bookContents[book.id] || [
-        "Conteúdo do livro em desenvolvimento...",
-        "Em breve você poderá ler esta história incrível!",
-        "Nossa equipe está trabalhando para trazer a melhor experiência de leitura para você."
+        "Bem-vindo à leitura de '" + book.title + "'!",
+        "Esta é uma história especial criada para " + book.ageRange + ".",
+        "Autor: " + book.author,
+        "Categoria: " + book.category,
+        "Prepare-se para uma aventura incrível!",
+        "Em um mundo cheio de imaginação e fantasia...",
+        "Onde cada página traz uma nova descoberta...",
+        "E cada capítulo é uma nova aventura!",
+        "Aproveite cada momento desta leitura mágica!",
+        "Que esta história traga alegria e aprendizado!"
     ];
 
     const handleNextPage = () => {
@@ -65,6 +112,22 @@ export default function BookReaderScreen({ route, navigation }) {
                 }),
             ]).start();
             setCurrentPage(currentPage + 1);
+        } else {
+            // Última página - mostrar mensagem de conclusão
+            Alert.alert(
+                'Parabéns! 🎉',
+                'Você completou a leitura!\nDeseja voltar para a biblioteca?',
+                [
+                    {
+                        text: 'Continuar Lendo',
+                        style: 'cancel'
+                    },
+                    {
+                        text: 'Voltar',
+                        onPress: () => navigation.goBack()
+                    }
+                ]
+            );
         }
     };
 
@@ -87,7 +150,34 @@ export default function BookReaderScreen({ route, navigation }) {
     };
 
     const handleBack = () => {
-        navigation.goBack();
+        if (currentPage > 0) {
+            Alert.alert(
+                'Sair da Leitura',
+                'Tem certeza que deseja sair? Seu progresso será salvo.',
+                [
+                    { text: 'Continuar Lendo', style: 'cancel' },
+                    { text: 'Sair', onPress: () => navigation.goBack() }
+                ]
+            );
+        } else {
+            navigation.goBack();
+        }
+    };
+
+    const handleAddToFavorites = () => {
+        Alert.alert(
+            'Adicionar aos Favoritos',
+            `Deseja adicionar "${book.title}" aos favoritos?`,
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Adicionar',
+                    onPress: () => {
+                        Alert.alert('Sucesso', `"${book.title}" foi adicionado aos favoritos!`);
+                    }
+                }
+            ]
+        );
     };
 
     return (
@@ -111,7 +201,9 @@ export default function BookReaderScreen({ route, navigation }) {
                         Página {currentPage + 1} de {bookContent.length}
                     </Text>
                 </View>
-                <View style={styles.headerRight} />
+                <TouchableOpacity style={styles.favoriteButton} onPress={handleAddToFavorites}>
+                    <Ionicons name="heart-outline" size={width * 0.06} color="#ffd700" />
+                </TouchableOpacity>
             </View>
 
             {/* Área de Leitura */}
@@ -120,11 +212,25 @@ export default function BookReaderScreen({ route, navigation }) {
                     <ScrollView
                         style={styles.pageScroll}
                         showsVerticalScrollIndicator={false}
+                        contentContainerStyle={styles.pageScrollContent}
                     >
                         <View style={styles.pageContent}>
                             <Text style={styles.pageText}>
                                 {bookContent[currentPage]}
                             </Text>
+
+                            {/* Ilustração para a primeira página */}
+                            {currentPage === 0 && (
+                                <View style={styles.illustration}>
+                                    <Ionicons name="book" size={width * 0.2} color="#ffd700" />
+                                    <Text style={styles.illustrationText}>
+                                        {book.title}
+                                    </Text>
+                                    <Text style={styles.illustrationSubtext}>
+                                        por {book.author}
+                                    </Text>
+                                </View>
+                            )}
                         </View>
                     </ScrollView>
                 </Animated.View>
@@ -168,23 +274,16 @@ export default function BookReaderScreen({ route, navigation }) {
                 </View>
 
                 <TouchableOpacity
-                    style={[
-                        styles.navButton,
-                        currentPage === bookContent.length - 1 && styles.navButtonDisabled
-                    ]}
+                    style={styles.navButton}
                     onPress={handleNextPage}
-                    disabled={currentPage === bookContent.length - 1}
                 >
-                    <Text style={[
-                        styles.navButtonText,
-                        currentPage === bookContent.length - 1 && styles.navButtonTextDisabled
-                    ]}>
-                        Próxima
+                    <Text style={styles.navButtonText}>
+                        {currentPage === bookContent.length - 1 ? 'Finalizar' : 'Próxima'}
                     </Text>
                     <Ionicons
-                        name="chevron-forward"
+                        name={currentPage === bookContent.length - 1 ? "checkmark" : "chevron-forward"}
                         size={width * 0.06}
-                        color={currentPage === bookContent.length - 1 ? 'rgba(255, 215, 0, 0.3)' : '#ffd700'}
+                        color="#ffd700"
                     />
                 </TouchableOpacity>
             </View>
@@ -214,6 +313,9 @@ const styles = StyleSheet.create({
     backButton: {
         padding: width * 0.02,
     },
+    favoriteButton: {
+        padding: width * 0.02,
+    },
     headerCenter: {
         flex: 1,
         alignItems: 'center',
@@ -228,9 +330,6 @@ const styles = StyleSheet.create({
         fontSize: width * 0.03,
         color: 'rgba(255, 255, 255, 0.7)',
         marginTop: height * 0.005,
-    },
-    headerRight: {
-        width: width * 0.06,
     },
     readerContainer: {
         flex: 1,
@@ -248,6 +347,9 @@ const styles = StyleSheet.create({
     pageScroll: {
         flex: 1,
     },
+    pageScrollContent: {
+        flexGrow: 1,
+    },
     pageContent: {
         flex: 1,
     },
@@ -256,6 +358,25 @@ const styles = StyleSheet.create({
         color: '#fff',
         lineHeight: height * 0.035,
         textAlign: 'justify',
+        marginBottom: height * 0.02,
+    },
+    illustration: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: height * 0.03,
+    },
+    illustrationText: {
+        fontSize: width * 0.05,
+        color: '#ffd700',
+        fontWeight: 'bold',
+        marginTop: height * 0.02,
+        textAlign: 'center',
+    },
+    illustrationSubtext: {
+        fontSize: width * 0.035,
+        color: 'rgba(255, 255, 255, 0.8)',
+        marginTop: height * 0.01,
+        textAlign: 'center',
     },
     controls: {
         flexDirection: 'row',

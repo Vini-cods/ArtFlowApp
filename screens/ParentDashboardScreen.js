@@ -27,7 +27,7 @@ const BookCard = ({ title, author, image, onPress }) => (
                 <Image source={image} style={styles.bookImage} resizeMode="cover" />
             ) : (
                 <View style={styles.bookImagePlaceholder}>
-                    <Ionicons name="book" size={width * 0.08} color="#ffd700" />
+                    <Ionicons name="book" size={width * 0.06} color="#ffd700" />
                 </View>
             )}
         </View>
@@ -762,13 +762,15 @@ const styles = StyleSheet.create({
         padding: width * 0.03,
         borderWidth: 1,
         borderColor: 'rgba(255, 215, 0, 0.2)',
-        height: width * 0.7, // Altura fixa para o card
+        height: width * 0.65, // Ajustado para melhor proporção
     },
     bookImageContainer: {
-        height: '50%', // Metade do card
+        height: width * 0.35, // Tamanho fixo para imagem
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: height * 0.01,
+        borderRadius: width * 0.03,
+        overflow: 'hidden',
     },
     bookImage: {
         width: '100%',
@@ -784,7 +786,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     bookInfo: {
-        height: '45%', // Quase metade do card
+        height: width * 0.2, // Altura fixa para informações
         justifyContent: 'center',
     },
     bookTitle: {

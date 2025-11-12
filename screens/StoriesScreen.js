@@ -9,7 +9,8 @@ import {
     TextInput,
     StatusBar,
     Alert,
-    Dimensions
+    Dimensions,
+    Image
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -140,7 +141,7 @@ export default function StoriesScreen({ navigation, route }) {
         { id: 'animals', name: 'Animais', icon: 'paw' }
     ];
 
-    // Dados simulados das histórias
+    // Dados simulados das histórias ATUALIZADOS com imagens
     const mockStories = [
         {
             id: 1,
@@ -151,7 +152,8 @@ export default function StoriesScreen({ navigation, route }) {
             ageRange: '4-8 anos',
             description: 'Uma jornada mágica por uma floresta cheia de surpresas e criaturas fantásticas.',
             isFavorite: true,
-            rating: 4.8
+            rating: 4.8,
+            image: require('../assets/Aventura na Floresta.png')
         },
         {
             id: 2,
@@ -162,7 +164,8 @@ export default function StoriesScreen({ navigation, route }) {
             ageRange: '6-10 anos',
             description: 'Desvende os segredos de um castelo misterioso cheio de passagens secretas.',
             isFavorite: false,
-            rating: 4.5
+            rating: 4.5,
+            image: require('../assets/O castelo magico.png')
         },
         {
             id: 3,
@@ -173,7 +176,8 @@ export default function StoriesScreen({ navigation, route }) {
             ageRange: '3-6 anos',
             description: 'Aprenda sobre os animais da fazenda e seus sons divertidos.',
             isFavorite: true,
-            rating: 4.7
+            rating: 4.7,
+            image: require('../assets/A menina e o dragão.webp')
         },
         {
             id: 4,
@@ -184,7 +188,8 @@ export default function StoriesScreen({ navigation, route }) {
             ageRange: '7-12 anos',
             description: 'Uma aventura educativa pelo sistema solar e além.',
             isFavorite: false,
-            rating: 4.9
+            rating: 4.9,
+            image: require('../assets/Viagem ao espaço.png')
         },
         {
             id: 5,
@@ -195,7 +200,8 @@ export default function StoriesScreen({ navigation, route }) {
             ageRange: '2-5 anos',
             description: 'Uma história calmante para ajudar as crianças a pegar no sono.',
             isFavorite: true,
-            rating: 4.6
+            rating: 4.6,
+            image: require('../assets/no fundo do mar.webp')
         },
         {
             id: 6,
@@ -206,7 +212,8 @@ export default function StoriesScreen({ navigation, route }) {
             ageRange: '5-9 anos',
             description: 'A história de um dragão que só queria fazer amigos.',
             isFavorite: false,
-            rating: 4.8
+            rating: 4.8,
+            image: require('../assets/O pequeno principe.png')
         }
     ];
 
@@ -254,19 +261,7 @@ export default function StoriesScreen({ navigation, route }) {
     };
 
     const handleReadStory = (story) => {
-        Alert.alert(
-            'Iniciar Leitura',
-            `Deseja ler "${story.title}"?`,
-            [
-                { text: 'Cancelar', style: 'cancel' },
-                {
-                    text: 'Começar',
-                    onPress: () => {
-                        Alert.alert('Sucesso', `Iniciando leitura de "${story.title}"!`);
-                    }
-                }
-            ]
-        );
+        navigation.navigate('BookDetail', { book: story });
     };
 
     const toggleFavorite = (storyId) => {
@@ -324,13 +319,19 @@ export default function StoriesScreen({ navigation, route }) {
                 </View>
 
                 <View style={styles.storyContent}>
-                    <View style={styles.storyIcon}>
-                        <Ionicons name="book" size={width * 0.1} color="#ffd700" />
+                    <View style={styles.storyImageContainer}>
+                        {item.image ? (
+                            <Image source={item.image} style={styles.storyImage} resizeMode="cover" />
+                        ) : (
+                            <View style={styles.storyImagePlaceholder}>
+                                <Ionicons name="book" size={width * 0.06} color="#ffd700" />
+                            </View>
+                        )}
                     </View>
                     <View style={styles.storyInfo}>
                         <Text style={styles.storyTitle} numberOfLines={2}>{item.title}</Text>
                         <Text style={styles.storyAuthor}>Por {item.author}</Text>
-                        <Text style={styles.storyDescription} numberOfLines={2}>
+                        <Text style={styles.storyDescription} numberOfLines={3}>
                             {item.description}
                         </Text>
                     </View>
@@ -702,14 +703,23 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
         marginBottom: height * 0.02,
     },
-    storyIcon: {
-        width: width * 0.15,
-        height: width * 0.15,
+    storyImageContainer: {
+        width: width * 0.25,
+        height: width * 0.25,
         borderRadius: width * 0.04,
+        overflow: 'hidden',
+        marginRight: width * 0.04,
+    },
+    storyImage: {
+        width: '100%',
+        height: '100%',
+    },
+    storyImagePlaceholder: {
+        width: '100%',
+        height: '100%',
         backgroundColor: 'rgba(255, 215, 0, 0.1)',
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: width * 0.04,
     },
     storyInfo: {
         flex: 1,

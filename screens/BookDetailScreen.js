@@ -7,7 +7,8 @@ import {
     ScrollView,
     Image,
     StatusBar,
-    Dimensions
+    Dimensions,
+    Alert
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,8 +22,37 @@ export default function BookDetailScreen({ route, navigation }) {
         navigation.navigate('BookReader', { book });
     };
 
+    const handleAddToFavorites = () => {
+        Alert.alert(
+            'Adicionar aos Favoritos',
+            `Deseja adicionar "${book.title}" aos favoritos?`,
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Adicionar',
+                    onPress: () => {
+                        Alert.alert('Sucesso', `"${book.title}" foi adicionado aos favoritos!`);
+                    }
+                }
+            ]
+        );
+    };
+
     const handleBack = () => {
         navigation.goBack();
+    };
+
+    // Função para obter o nome da categoria formatado
+    const getCategoryName = (categoryId) => {
+        const categories = {
+            'adventure': 'Aventura',
+            'fantasy': 'Fantasia',
+            'educational': 'Educativo',
+            'bedtime': 'Para Dormir',
+            'animals': 'Animais',
+            'all': 'Geral'
+        };
+        return categories[categoryId] || categoryId;
     };
 
     return (
@@ -41,7 +71,9 @@ export default function BookDetailScreen({ route, navigation }) {
                     <Ionicons name="arrow-back" size={width * 0.06} color="#ffd700" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Detalhes do Livro</Text>
-                <View style={styles.headerRight} />
+                <TouchableOpacity style={styles.favoriteButton} onPress={handleAddToFavorites}>
+                    <Ionicons name="heart-outline" size={width * 0.06} color="#ffd700" />
+                </TouchableOpacity>
             </View>
 
             <ScrollView
@@ -69,27 +101,38 @@ export default function BookDetailScreen({ route, navigation }) {
                     <View style={styles.bookMeta}>
                         <View style={styles.metaItem}>
                             <Ionicons name="time-outline" size={width * 0.04} color="#ffd700" />
-                            <Text style={styles.metaText}>{book.duration} min</Text>
+                            <Text style={styles.metaText}>{book.duration || '8'} min</Text>
                         </View>
                         <View style={styles.metaItem}>
                             <Ionicons name="person-outline" size={width * 0.04} color="#ffd700" />
                             <Text style={styles.metaText}>{book.ageRange}</Text>
                         </View>
+                        <View style={styles.metaItem}>
+                            <Ionicons name="star" size={width * 0.04} color="#ffd700" />
+                            <Text style={styles.metaText}>{book.rating || '4.5'}</Text>
+                        </View>
                     </View>
 
-                    {/* Categorias */}
+                    {/* Categoria */}
                     <View style={styles.categories}>
-                        {book.category.split(', ').map((cat, index) => (
-                            <View key={index} style={styles.categoryTag}>
-                                <Text style={styles.categoryText}>{cat.trim()}</Text>
+                        <View style={styles.categoryTag}>
+                            <Text style={styles.categoryText}>
+                                {getCategoryName(book.category)}
+                            </Text>
+                        </View>
+                        {book.chapters && (
+                            <View style={styles.categoryTag}>
+                                <Text style={styles.categoryText}>{book.chapters}</Text>
                             </View>
-                        ))}
+                        )}
                     </View>
 
                     {/* Descrição */}
                     <View style={styles.descriptionSection}>
                         <Text style={styles.sectionTitle}>Sobre a História</Text>
-                        <Text style={styles.description}>{book.description}</Text>
+                        <Text style={styles.description}>
+                            {book.description || 'Uma história incrível cheia de aventuras e aprendizados para crianças de todas as idades.'}
+                        </Text>
                     </View>
 
                     {/* Detalhes Adicionais */}
@@ -101,7 +144,7 @@ export default function BookDetailScreen({ route, navigation }) {
                         </View>
                         <View style={styles.detailItem}>
                             <Text style={styles.detailLabel}>Duração:</Text>
-                            <Text style={styles.detailValue}>{book.duration} minutos de leitura</Text>
+                            <Text style={styles.detailValue}>{book.duration || '8'} minutos de leitura</Text>
                         </View>
                         <View style={styles.detailItem}>
                             <Text style={styles.detailLabel}>Faixa Etária:</Text>
@@ -109,8 +152,14 @@ export default function BookDetailScreen({ route, navigation }) {
                         </View>
                         <View style={styles.detailItem}>
                             <Text style={styles.detailLabel}>Categoria:</Text>
-                            <Text style={styles.detailValue}>{book.category}</Text>
+                            <Text style={styles.detailValue}>{getCategoryName(book.category)}</Text>
                         </View>
+                        {book.lastRead && (
+                            <View style={styles.detailItem}>
+                                <Text style={styles.detailLabel}>Última Leitura:</Text>
+                                <Text style={styles.detailValue}>{book.lastRead}</Text>
+                            </View>
+                        )}
                     </View>
                 </View>
 
@@ -158,13 +207,13 @@ const styles = StyleSheet.create({
     backButton: {
         padding: width * 0.02,
     },
+    favoriteButton: {
+        padding: width * 0.02,
+    },
     headerTitle: {
         fontSize: width * 0.045,
         fontWeight: 'bold',
         color: '#ffd700',
-    },
-    headerRight: {
-        width: width * 0.06,
     },
     scrollView: {
         flex: 1,
@@ -217,9 +266,9 @@ const styles = StyleSheet.create({
     metaItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginHorizontal: width * 0.03,
+        marginHorizontal: width * 0.02,
         backgroundColor: 'rgba(255, 215, 0, 0.1)',
-        paddingHorizontal: width * 0.04,
+        paddingHorizontal: width * 0.03,
         paddingVertical: height * 0.008,
         borderRadius: width * 0.02,
     },

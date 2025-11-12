@@ -8,7 +8,8 @@ import {
     FlatList,
     StatusBar,
     Dimensions,
-    Alert
+    Alert,
+    Image
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -91,8 +92,8 @@ const BottomTabBar = ({ activeTab, onTabChange, navigation }) => {
 };
 
 // Componente de Card de Livro Favorito
-const FavoriteBookCard = ({ book, onPress, onRemove, isChildBook }) => (
-    <TouchableOpacity style={styles.bookCard} onPress={onPress}>
+const FavoriteBookCard = ({ book, onPress, onRemove, isChildBook, navigation }) => (
+    <TouchableOpacity style={styles.bookCard} onPress={() => navigation.navigate('BookDetail', { book })}>
         <LinearGradient
             colors={isChildBook ?
                 ['rgba(74, 144, 226, 0.2)', 'rgba(74, 144, 226, 0.1)'] :
@@ -100,30 +101,14 @@ const FavoriteBookCard = ({ book, onPress, onRemove, isChildBook }) => (
             }
             style={styles.bookGradient}
         >
-            <View style={styles.bookHeader}>
-                <View style={styles.bookIconContainer}>
-                    <View style={[
-                        styles.bookIcon,
-                        isChildBook && styles.childBookIcon
-                    ]}>
-                        <Ionicons
-                            name="book"
-                            size={moderateScale(20)}
-                            color={isChildBook ? "#4a90e2" : "#ffd700"}
-                        />
+            <View style={styles.bookImageContainer}>
+                {book.image ? (
+                    <Image source={book.image} style={styles.bookImage} resizeMode="cover" />
+                ) : (
+                    <View style={styles.bookImagePlaceholder}>
+                        <Ionicons name="book" size={moderateScale(24)} color={isChildBook ? "#4a90e2" : "#ffd700"} />
                     </View>
-                    <View style={styles.bookTypeBadge}>
-                        <Text style={styles.bookTypeText}>
-                            {isChildBook ? 'Criança' : 'Adulto'}
-                        </Text>
-                    </View>
-                </View>
-                <TouchableOpacity
-                    style={styles.removeButton}
-                    onPress={onRemove}
-                >
-                    <Ionicons name="heart" size={moderateScale(18)} color="#ff4444" />
-                </TouchableOpacity>
+                )}
             </View>
 
             <View style={styles.bookInfo}>
@@ -138,13 +123,26 @@ const FavoriteBookCard = ({ book, onPress, onRemove, isChildBook }) => (
                         Última leitura: {book.lastRead}
                     </Text>
                 )}
+                <View style={styles.bookFooter}>
+                    <View style={styles.bookTypeBadge}>
+                        <Text style={styles.bookTypeText}>
+                            {isChildBook ? 'Infantil' : 'Adulto'}
+                        </Text>
+                    </View>
+                    <TouchableOpacity
+                        style={styles.removeButton}
+                        onPress={onRemove}
+                    >
+                        <Ionicons name="heart" size={moderateScale(18)} color="#ff4444" />
+                    </TouchableOpacity>
+                </View>
             </View>
         </LinearGradient>
     </TouchableOpacity>
 );
 
 // Componente de Categoria
-const CategorySection = ({ title, books, onBookPress, onRemoveBook }) => (
+const CategorySection = ({ title, books, onRemoveBook, navigation }) => (
     <View style={styles.categorySection}>
         <Text style={styles.categoryTitle}>{title}</Text>
         <FlatList
@@ -156,9 +154,10 @@ const CategorySection = ({ title, books, onBookPress, onRemoveBook }) => (
             renderItem={({ item }) => (
                 <FavoriteBookCard
                     book={item}
-                    onPress={() => onBookPress(item)}
+                    onPress={() => navigation.navigate('BookDetail', { book: item })}
                     onRemove={() => onRemoveBook(item)}
                     isChildBook={item.category === 'child'}
+                    navigation={navigation}
                 />
             )}
         />
@@ -185,7 +184,10 @@ export default function FavoritesScreen({ navigation }) {
                     ageRange: '3-6 anos',
                     category: 'child',
                     lastRead: '2 dias atrás',
-                    coverColor: '#4a90e2'
+                    image: require('../assets/no fundo do mar.webp'),
+                    duration: 8,
+                    rating: 4.8,
+                    description: 'Uma aventura submarina incrível com criaturas marinhas fascinantes.'
                 },
                 {
                     id: 2,
@@ -195,7 +197,10 @@ export default function FavoritesScreen({ navigation }) {
                     ageRange: '4-7 anos',
                     category: 'child',
                     lastRead: '1 semana atrás',
-                    coverColor: '#ff6b6b'
+                    image: require('../assets/A menina e o dragão.webp'),
+                    duration: 6,
+                    rating: 4.5,
+                    description: 'A emocionante história de um dinossauro que descobre o mundo.'
                 },
                 {
                     id: 3,
@@ -204,7 +209,10 @@ export default function FavoritesScreen({ navigation }) {
                     chapters: '10 capítulos',
                     ageRange: '5-8 anos',
                     category: 'child',
-                    coverColor: '#9b59b6'
+                    image: require('../assets/O castelo magico.png'),
+                    duration: 10,
+                    rating: 4.7,
+                    description: 'Fadas mágicas e suas aventuras em um jardim encantado.'
                 }
             ];
 
@@ -217,7 +225,10 @@ export default function FavoritesScreen({ navigation }) {
                     ageRange: '18+ anos',
                     category: 'adult',
                     lastRead: '3 dias atrás',
-                    coverColor: '#e74c3c'
+                    image: require('../assets/Aventura na Floresta.png'),
+                    duration: 45,
+                    rating: 4.9,
+                    description: 'A épica história das famílias nobres em Westeros.'
                 },
                 {
                     id: 5,
@@ -226,7 +237,10 @@ export default function FavoritesScreen({ navigation }) {
                     chapters: '20 capítulos',
                     ageRange: '18+ anos',
                     category: 'adult',
-                    coverColor: '#3498db'
+                    image: require('../assets/Viagem ao espaço.png'),
+                    duration: 60,
+                    rating: 4.8,
+                    description: 'A história completa do universo de Game of Thrones.'
                 }
             ];
 
@@ -239,7 +253,10 @@ export default function FavoritesScreen({ navigation }) {
                     ageRange: '2-5 anos',
                     category: 'child',
                     lastRead: 'Hoje',
-                    coverColor: '#2ecc71'
+                    image: require('../assets/O pequeno principe.png'),
+                    duration: 5,
+                    rating: 4.6,
+                    description: 'Contos calmantes para uma boa noite de sono.'
                 }
             ];
 
@@ -254,8 +271,7 @@ export default function FavoritesScreen({ navigation }) {
     }, []);
 
     const handleBookPress = (book) => {
-        console.log('Abrir livro favorito:', book.title);
-        Alert.alert('Abrir Livro', `Abrir "${book.title}"?`);
+        navigation.navigate('BookDetail', { book });
     };
 
     const handleRemoveFavorite = (book) => {
@@ -343,8 +359,8 @@ export default function FavoritesScreen({ navigation }) {
                     <CategorySection
                         title="Adicionados Recentemente"
                         books={favoriteBooks.recentlyAdded}
-                        onBookPress={handleBookPress}
                         onRemoveBook={handleRemoveFavorite}
+                        navigation={navigation}
                     />
                 )}
 
@@ -352,16 +368,16 @@ export default function FavoritesScreen({ navigation }) {
                 <CategorySection
                     title="Para as Crianças"
                     books={favoriteBooks.childBooks}
-                    onBookPress={handleBookPress}
                     onRemoveBook={handleRemoveFavorite}
+                    navigation={navigation}
                 />
 
                 {/* Livros para Adultos */}
                 <CategorySection
                     title="Para os Pais"
                     books={favoriteBooks.adultBooks}
-                    onBookPress={handleBookPress}
                     onRemoveBook={handleRemoveFavorite}
+                    navigation={navigation}
                 />
 
                 {/* Mensagem quando não há favoritos */}
@@ -482,7 +498,7 @@ const styles = StyleSheet.create({
         paddingRight: responsiveWidth(4),
     },
     bookCard: {
-        width: width * 0.65, // Melhor para scroll horizontal
+        width: width * 0.65,
         marginRight: responsiveWidth(3),
         borderRadius: moderateScale(12),
         overflow: 'hidden',
@@ -490,46 +506,34 @@ const styles = StyleSheet.create({
     bookGradient: {
         padding: moderateScale(12),
         borderRadius: moderateScale(12),
-        height: responsiveHeight(18),
+        height: responsiveHeight(25),
         justifyContent: 'space-between',
     },
-    bookHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-    },
-    bookIconContainer: {
-        alignItems: 'flex-start',
-    },
-    bookIcon: {
-        width: moderateScale(32),
-        height: moderateScale(32),
-        borderRadius: moderateScale(8),
-        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+    bookImageContainer: {
+        width: '100%',
+        height: responsiveHeight(12),
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: moderateScale(5),
+        marginBottom: moderateScale(8),
+        borderRadius: moderateScale(8),
+        overflow: 'hidden',
     },
-    childBookIcon: {
-        backgroundColor: 'rgba(74, 144, 226, 0.1)',
+    bookImage: {
+        width: '100%',
+        height: '100%',
+        borderRadius: moderateScale(8),
     },
-    bookTypeBadge: {
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        paddingHorizontal: moderateScale(5),
-        paddingVertical: moderateScale(2),
-        borderRadius: moderateScale(4),
-    },
-    bookTypeText: {
-        color: '#fff',
-        fontSize: moderateScale(8),
-        fontWeight: 'bold',
-    },
-    removeButton: {
-        padding: moderateScale(4),
+    bookImagePlaceholder: {
+        width: '100%',
+        height: '100%',
+        borderRadius: moderateScale(8),
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     bookInfo: {
         flex: 1,
-        justifyContent: 'flex-end',
+        justifyContent: 'space-between',
     },
     bookTitle: {
         color: '#fff',
@@ -561,6 +565,26 @@ const styles = StyleSheet.create({
         color: 'rgba(255, 255, 255, 0.5)',
         fontSize: moderateScale(8),
         fontStyle: 'italic',
+        marginBottom: moderateScale(4),
+    },
+    bookFooter: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    bookTypeBadge: {
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        paddingHorizontal: moderateScale(6),
+        paddingVertical: moderateScale(2),
+        borderRadius: moderateScale(4),
+    },
+    bookTypeText: {
+        color: '#fff',
+        fontSize: moderateScale(8),
+        fontWeight: 'bold',
+    },
+    removeButton: {
+        padding: moderateScale(4),
     },
     emptyState: {
         alignItems: 'center',
