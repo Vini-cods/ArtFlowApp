@@ -225,7 +225,7 @@ export default function FavoritesScreen({ navigation }) {
                     ageRange: '18+ anos',
                     category: 'adult',
                     lastRead: '3 dias atrás',
-                    image: require('../assets/Aventura na Floresta.png'),
+                    image: require('../assets/volume1.jpg'),
                     duration: 45,
                     rating: 4.9,
                     description: 'A épica história das famílias nobres em Westeros.'
@@ -237,7 +237,7 @@ export default function FavoritesScreen({ navigation }) {
                     chapters: '20 capítulos',
                     ageRange: '18+ anos',
                     category: 'adult',
-                    image: require('../assets/Viagem ao espaço.png'),
+                    image: require('../assets/geloefogo.jpg'),
                     duration: 60,
                     rating: 4.8,
                     description: 'A história completa do universo de Game of Thrones.'
